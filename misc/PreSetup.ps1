@@ -1,6 +1,4 @@
 # PreSetup.ps1 - PowerShell version of PreSetup.bat
-# DO NOT DELETE, IMPORTANT FOR SCRIPT FINDING
-#Set-Location -Path $PSScriptRoot
 
 # Copy Wallpaper to System Location and RemoteControl to User's Desktop
 Copy-Item "misc\PC-Spezialist_BG.jpg" -Destination "C:\Windows\Web\4K\Wallpaper\Windows\PC-Spezialist_BG.jpg" -Force
@@ -8,11 +6,8 @@ Copy-Item "misc\PCSpezialist Fernwartung.exe" -Destination "$env:USERPROFILE\Des
 
 # This PC on desktop
 Write-Output "Showing This PC ..."
-if (-not (Test-Path -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel))
-{
-	New-Item -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel -Force
-}
-New-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel -Name "{20D04FE0-3AEA-1069-A2D8-08002B30309D}" -PropertyType DWord -Value 0 -Force
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" /v "{20D04FE0-3AEA-1069-A2D8-08002B30309D}" /t REG_DWORD /d 0 /f   
+cmd.exe /c "taskkill.exe /f /im explorer.exe && start explorer.exe"
 
 # Disables Screen Off and Sleepmode in powerplan
 powercfg /X monitor-timeout-ac 0
@@ -43,8 +38,18 @@ namespace Win32{
     }
  } 
 '@
-
 add-type $code 
 
 #Apply the Change on the system 
 [Win32.Wallpaper]::SetWallpaper($imgPath)
+
+Write-Output "----- Change Order of Desktop Icons -----"
+try {
+  . "$PSScriptRoot\REICON.ps1"
+} catch {
+  Write-Output "FUCK, the Module wont load ... DAMIT"
+}
+Set-IconPositionWithSwap -Name "Dieser PC" -X 36 -Y 2
+Set-IconPositionWithSwap -Name "Papierkorb" -X 36 -Y 102
+Set-IconPositionWithSwap -Name "Microsoft Edge" -X 36 -Y 202
+Set-IconPositionWithSwap -Name "PCSpezialist Fernwartung" -X 1836 -Y 2

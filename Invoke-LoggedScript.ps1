@@ -85,19 +85,15 @@ function Invoke-LoggedScript {
             $logFileName = "$($scriptBaseName)_$($timestamp)_LOG.txt"
             $logFullPath = Join-Path -Path $LogDirectory -ChildPath $logFileName
 
-            Write-Host "--------------------------------------------------------" -ForegroundColor Green
+            Start-Transcript -Path $logFullPath -Force
+            Write-Host "--------------------------------------------------------"
             Write-Host "Starting script:" -ForegroundColor Cyan " $ScriptPath"
-            Write-Host "Output will be logged to:" -ForegroundColor Cyan " $logFullPath"
-            Write-Host "You will see the live output below." -ForegroundColor Green
             Write-Host "--------------------------------------------------------"
 
-            Start-Transcript -Path $logFullPath -Force
             try {
                 # Check if the script is a batch file
                 $scriptExtension = (Get-Item -Path $ScriptPath).Extension
                 if ($scriptExtension -in @('.bat', '.cmd')) {
-                    # For batch files, stream output live to host
-                    Write-Host "Executing batch file: $ScriptPath" -ForegroundColor Cyan
                     & cmd.exe /c "call `"$ScriptPath`" $ArgumentList 2>&1" | ForEach-Object {
                         Write-Host $_
                     }
@@ -108,18 +104,11 @@ function Invoke-LoggedScript {
             }
             finally {
                 Stop-Transcript
-                Write-Host "--------------------------------------------------------" -ForegroundColor Green
-                Write-Host "Script execution finished."
-                Write-Host "Log file complete:" -ForegroundColor Cyan " $logFullPath"
-                Write-Host "--------------------------------------------------------"
             }
         } else {
             Write-Host "No _USBDATA folder found on any drive root. Logging is disabled for this session." -ForegroundColor Yellow
             Write-Host "Running script without logging..."
             & $ScriptPath @ArgumentList
-            Write-Host "--------------------------------------------------------" -ForegroundColor Green
-            Write-Host "Script execution finished (NO LOG FILE)."
-            Write-Host "--------------------------------------------------------"
         }
     }
     catch {

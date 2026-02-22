@@ -1,4 +1,4 @@
-+ Enable the Option Windows Spotlight in settings (Atlas Fix)
-+ fix winget on newinstallations, because chocolatey SUCKS!
-	- ... its ok but Acrobat SUCKS hard
-	- FUCK YOU ADOBE
++ Clean Startmenu Pins (remove Edge, LinkedIn)
++ Uninstall Outlook new
++ FIX LibreOffice Desktop Icon Placement
++ Install Adobe Acrobat (localversion from %~dp0/..)
