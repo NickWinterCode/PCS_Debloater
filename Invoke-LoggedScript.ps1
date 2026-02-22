@@ -93,7 +93,18 @@ function Invoke-LoggedScript {
 
             Start-Transcript -Path $logFullPath -Force
             try {
-                & $ScriptPath @ArgumentList
+                # Check if the script is a batch file
+                $scriptExtension = (Get-Item -Path $ScriptPath).Extension
+                if ($scriptExtension -in @('.bat', '.cmd')) {
+                    # For batch files, stream output live to host
+                    Write-Host "Executing batch file: $ScriptPath" -ForegroundColor Cyan
+                    & cmd.exe /c "call `"$ScriptPath`" $ArgumentList 2>&1" | ForEach-Object {
+                        Write-Host $_
+                    }
+                } else {
+                    # For PowerShell scripts, call directly
+                    & $ScriptPath @ArgumentList
+                }
             }
             finally {
                 Stop-Transcript

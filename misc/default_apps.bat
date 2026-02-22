@@ -284,6 +284,31 @@ SetUserFTA.exe .eml ThunderbirdEML
 SetUserFTA.exe .wdseml ThunderbirdEML
 
 echo Firefox
+if not exist "%programfiles%\Mozilla Firefox\firefox.exe" goto :notfound
+
+start "" "%programfiles%\Mozilla Firefox\firefox.exe"
+timeout 2
+taskkill /im firefox.exe /f
+
+set "profilePath=%APPDATA%\Mozilla\Firefox\Profiles"
+set "profileDir="
+
+for /d %%P in ("%profilePath%\*.default-release") do set "profileDir=%%P"
+if not defined profileDir (
+    for /d %%P in ("%profilePath%\*.default") do set "profileDir=%%P"
+)
+if not defined profileDir (
+    echo Firefox profile not found!
+    goto :notfound
+)
+
+(
+    echo user_pref("browser.startup.homepage", "https://www.google.de"^);
+    echo user_pref("browser.startup.page", 1^);
+) > "%profileDir%\user.js"
+echo Homepage setting added to user.js
+
+:notfound
 SetUserFTA.exe .htm FirefoxHTML-308046B0AF4A39CB
 SetUserFTA.exe .html FirefoxHTML-308046B0AF4A39CB
 start ms-settings:defaultapps

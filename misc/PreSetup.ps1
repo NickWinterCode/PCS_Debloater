@@ -20,6 +20,13 @@ powercfg /X monitor-timeout-dc 0
 powercfg /X standby-timeout-ac 0
 powercfg /X standby-timeout-dc 0
 
+Write-Output "----- Adding Orga. to System-Info in setting -----"
+New-Item -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation' -Force | Out-Null
+New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation' -Name 'Manufacturer' -PropertyType String -Value "PC-SPEZIALIST GUESTROW" -Force | Out-Null
+New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation' -Name 'SupportURL'  -PropertyType String -Value 'https://pcspezialist.de/standorte/mv/guestrow-computervertrieb-marco-ast/' -Force | Out-Null
+New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation' -Name 'SupportPhone' -PropertyType String -Value '03843-22700' -Force | Out-Null
+
+Write-Output "----- Apply Wallpaper -----"
 # Apply Wallpaper
 $imgPath="C:\Windows\Web\4K\Wallpaper\Windows\PC-Spezialist_BG.jpg"
 $code = @' 
