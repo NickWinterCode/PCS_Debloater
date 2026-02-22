@@ -7,15 +7,54 @@
 
 # Configuration
 $destination = if ($PSScriptRoot) { $PSScriptRoot } else { Get-Location }
-$tempFolder = "$destination\Downloads_Temp"
-$logFile = "$destination\install_log.txt"
+
+# Use the system's temp path - works with ALL usernames (ÖÜÄ, spaces, symbols, etc.)
+$tempFolder = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath "SoftwareDownloads_Temp"
 $cleanupAfterInstall = $true
+
+# LOAD SOFTWARE CONFIGURATION
+# ============================================
+
+$configPath = Join-Path $destination "software_config.json"
+$softwareConfig = $null
+
+if (Test-Path $configPath) {
+    try {
+        $softwareConfig = Get-Content $configPath -Raw | ConvertFrom-Json
+        Write-Host "Loaded software configuration from config file" -ForegroundColor Cyan
+    }
+    catch {
+        Write-Host "Error reading config file, using defaults (install all)" -ForegroundColor Yellow
+        $softwareConfig = $null
+    }
+}
+else {
+    Write-Host "No config file found, installing all software by default" -ForegroundColor Cyan
+}
+
+# Helper function to check if software should be installed
+function Test-SoftwareEnabled {
+    param([string]$Name)
+    
+    # If no config, install all by default
+    if ($null -eq $softwareConfig) {
+        return $true
+    }
+    
+    # Check if the property exists and is true
+    if ($softwareConfig.PSObject.Properties.Name -contains $Name) {
+        return $softwareConfig.$Name -eq $true
+    }
+    
+    # Default to true if not specified
+    return $true
+}
 
 # Force TLS 1.2
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-# Software Configuration
-$software = @(
+# Software Configuration (Full list)
+$allSoftware = @(
     @{
         Name = "Firefox"
         Url = "https://download.mozilla.org/?product=firefox-latest-ssl&os=win64&lang=de"
@@ -72,26 +111,57 @@ $software = @(
     }
 )
 
-# ============================================
+# Filter software based on configuration
+$software = @()
+$skippedByConfig = @()
+
+foreach ($app in $allSoftware) {
+    if (Test-SoftwareEnabled -Name $app.Name) {
+        $software += $app
+    }
+    else {
+        $skippedByConfig += $app.Name
+    }
+}
+
+# Show what's enabled/disabled
+if ($skippedByConfig.Count -gt 0) {
+    Write-Host "`nSoftware disabled by configuration:" -ForegroundColor Yellow
+    foreach ($name in $skippedByConfig) {
+        Write-Host "  [-] $name" -ForegroundColor DarkGray
+    }
+}
+
+if ($software.Count -gt 0) {
+    Write-Host "`nSoftware enabled for installation:" -ForegroundColor Green
+    foreach ($app in $software) {
+        Write-Host "  [+] $($app.Name)" -ForegroundColor Green
+    }
+}
+else {
+    Write-Host "`nNo software selected for installation!" -ForegroundColor Red
+    Write-Host "Press any key to exit..."
+    [System.Console]::ReadKey($true) | Out-Null
+    exit 0
+}
+
+Write-Host ""
+
 # HELPER FUNCTIONS
 # ============================================
 
-function Write-Log {
-    param([string]$Message, [string]$Color = "White")
-    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    "$timestamp - $Message" | Out-File -Append -FilePath $logFile -Encoding UTF8
-    Write-Host $Message -ForegroundColor $Color
-}
-
 function Show-Banner {
     Clear-Host
+    
+    # Build dynamic software list for banner
+    $enabledNames = ($software | ForEach-Object { $_.Name }) -join " | "
+    
     Write-Host @"
 
   +============================================+
   |   SOFTWARE DOWNLOADER & INSTALLER (DE)    |
-  |   Firefox | Thunderbird | LibreOffice     |
-  |   VLC | WinRAR | CDBurnerXP               |
   +============================================+
+  Selected: $enabledNames
 
 "@ -ForegroundColor Cyan
 }
@@ -234,7 +304,7 @@ function Get-LatestVersion {
             }
             "WinRAR" {
                 try {
-                    $info = & winget show RARLab.WinRAR --accept-package-agreements --accept-source-agreements2>$null | Out-String
+                    $info = & winget show RARLab.WinRAR --accept-package-agreements --accept-source-agreements 2>$null | Out-String
                     if ($info -match 'Version[:\s]+(\d+\.\d+)') { return $matches[1] }
                 }
                 catch { }
@@ -256,7 +326,6 @@ function Get-LatestVersion {
     return $null
 }
 
-# ============================================
 # GET DOWNLOAD INFO FUNCTIONS
 # ============================================
 
@@ -347,7 +416,6 @@ function Get-WinRARDownloadInfo {
     }
 }
 
-# ============================================
 # DOWNLOAD FUNCTION (USING CURL)
 # ============================================
 
@@ -361,13 +429,30 @@ function Start-Download {
     Write-Host ""
     Write-Host "  Downloading $DisplayName..." -ForegroundColor Yellow
     Write-Host "  URL: $Url" -ForegroundColor Gray
+    Write-Host "  Destination: $OutFile" -ForegroundColor Gray
     Write-Host ""
     
-    # Use curl.exe with progress bar
-    curl.exe -L $Url -o $OutFile --progress-bar --connect-timeout 60 --retry 3
+    # Escape the output path for curl - handles spaces, umlauts, and special characters
+    $escapedOutFile = $OutFile -replace '"', '\"'
     
-    if ($LASTEXITCODE -eq 0 -and (Test-Path $OutFile)) {
-        $fileSize = (Get-Item $OutFile).Length / 1MB
+    # Use Start-Process to properly handle paths with special characters
+    $curlArgs = @(
+        '-L'
+        $Url
+        '-o'
+        "`"$escapedOutFile`""
+        '--progress-bar'
+        '--connect-timeout'
+        '60'
+        '--retry'
+        '3'
+    )
+    
+    # Execute curl with proper argument handling
+    $process = Start-Process -FilePath "curl.exe" -ArgumentList $curlArgs -Wait -PassThru -NoNewWindow
+    
+    if ($process.ExitCode -eq 0 -and (Test-Path -LiteralPath $OutFile)) {
+        $fileSize = (Get-Item -LiteralPath $OutFile).Length / 1MB
         if ($fileSize -gt 1) {
             Write-Host ""
             Write-Host "  Download completed: $([math]::Round($fileSize, 2)) MB" -ForegroundColor Green
@@ -383,8 +468,6 @@ function Start-Download {
         return $false
     }
 }
-
-# ============================================
 # INSTALL FUNCTION
 # ============================================
 
@@ -422,7 +505,6 @@ function Install-Software {
     }
 }
 
-# ============================================
 # MAIN EXECUTION
 # ============================================
 
@@ -432,7 +514,6 @@ Show-Banner
 if (-not (Test-AdminRights)) {
     Write-Host "ERROR: Administrator privileges required!" -ForegroundColor Red
     Write-Host "Please right-click and select 'Run as Administrator'" -ForegroundColor Yellow
-    #pause
     exit 1
 }
 
@@ -440,19 +521,23 @@ if (-not (Test-AdminRights)) {
 if (-not (Get-Command curl.exe -ErrorAction SilentlyContinue)) {
     Write-Host "ERROR: curl.exe not found!" -ForegroundColor Red
     Write-Host "curl.exe is required for downloads (included in Windows 10+)" -ForegroundColor Yellow
-    #pause
     exit 1
 }
 
-# Check for optical drives
-Write-Host "Checking hardware..." -ForegroundColor Yellow
-$opticalDriveInfo = Test-OpticalDrive
+# Check for optical drives (only if CDBurnerXP is in the list)
+$opticalDriveInfo = @{ Detected = $true; Count = 0; Message = "Not checked" }
+$hasCDBurnerXP = $software | Where-Object { $_.Name -eq "CDBurnerXP" }
 
-if ($opticalDriveInfo.Detected) {
-    Write-Host "[OK] $($opticalDriveInfo.Message)" -ForegroundColor Green
-}
-else {
-    Write-Host "[--] $($opticalDriveInfo.Message) - CDBurnerXP will be skipped" -ForegroundColor Yellow
+if ($hasCDBurnerXP) {
+    Write-Host "Checking hardware..." -ForegroundColor Yellow
+    $opticalDriveInfo = Test-OpticalDrive
+
+    if ($opticalDriveInfo.Detected) {
+        Write-Host "[OK] $($opticalDriveInfo.Message)" -ForegroundColor Green
+    }
+    else {
+        Write-Host "[--] $($opticalDriveInfo.Message) - CDBurnerXP will be skipped" -ForegroundColor Yellow
+    }
 }
 
 # Filter software based on optical drive
@@ -468,7 +553,14 @@ foreach ($app in $software) {
     }
 }
 
-# ============================================
+# Check if anything left to install
+if ($softwareToProcess.Count -eq 0) {
+    Write-Host "`nNo software to install after filtering!" -ForegroundColor Yellow
+    Write-Host "Press any key to exit..."
+    [System.Console]::ReadKey($true) | Out-Null
+    exit 0
+}
+
 # VERSION CHECK
 # ============================================
 
@@ -528,10 +620,13 @@ Write-Host ("-" * 60) -ForegroundColor Gray
 
 # Summary
 Write-Host "`nSummary:" -ForegroundColor Cyan
-Write-Host "  Up to date:  $($upToDate.Count)" -ForegroundColor Green
-Write-Host "  To install:  $($toInstall.Count)" -ForegroundColor Yellow
+Write-Host "  Up to date:      $($upToDate.Count)" -ForegroundColor Green
+Write-Host "  To install:      $($toInstall.Count)" -ForegroundColor Yellow
+if ($skippedByConfig.Count -gt 0) {
+    Write-Host "  Disabled:        $($skippedByConfig.Count) (by configuration)" -ForegroundColor DarkGray
+}
 if ($skippedOptical.Count -gt 0) {
-    Write-Host "  Skipped:     $($skippedOptical.Count) (no optical drive)" -ForegroundColor Gray
+    Write-Host "  Skipped:         $($skippedOptical.Count) (no optical drive)" -ForegroundColor Gray
 }
 
 # Exit if nothing to install
@@ -539,46 +634,26 @@ if ($toInstall.Count -eq 0) {
     Write-Host "`n+============================================+" -ForegroundColor Green
     Write-Host "|     All software is already up to date!   |" -ForegroundColor Green
     Write-Host "+============================================+" -ForegroundColor Green
-    #pause
-    Write-Output "----- Change Order of Desktop Icons -----"
-    try {
-      . "$PSScriptRoot\REICON.ps1"
-    } catch {
-      Write-Output "FUCK, the Module wont load ... DAMIT"
-    }
-    $PublicDesktop = "$env:PUBLIC\Desktop"
-    Remove-Item "$PublicDesktop\Microsoft Edge.lnk" -Force
-    Set-IconPositionWithSwap -Name "Dieser PC" -X 36 -Y 2
-    Set-IconPositionWithSwap -Name "Papierkorb" -X 36 -Y 102
-    Set-IconPositionWithSwap -Name "Firefox" -X 36 -Y 202
-    Set-IconPositionWithSwap -Name "Thunderbird" -X 36 -Y 302
-    Set-IconPositionWithSwap -Name "LibreOffice" -X 36 -Y 402
-    Set-IconPositionWithSwap -Name "Adobe Acrobat" -X 36 -Y 502
-    Set-IconPositionWithSwap -Name "VLC media player" -X 36 -Y 602
-    Set-IconPositionWithSwap -Name "PCSpezialist Fernwartung" -X 1836 -Y 2
-    Set-IconPositionWithSwap -Name "CDBurnerXP" -X 36 -Y 702
+    
+    # Run icon arrangement
+    & "$PSScriptRoot\Arrange-DesktopIcons.ps1" -InstalledSoftware $softwareToProcess.Name
     exit 0
 }
 
 # Confirm
 Write-Host ""
 $confirm = 'Y'
-#$confirm = Read-Host "Proceed with download and installation? (Y/n)"
 if ($confirm -eq 'n' -or $confirm -eq 'N') {
     Write-Host "Cancelled." -ForegroundColor Yellow
-    #pause
     exit 0
 }
 
-# Create temp folder
-if (-not (Test-Path $tempFolder)) {
+# Create temp folder - use -LiteralPath for special characters
+if (-not (Test-Path -LiteralPath $tempFolder)) {
     New-Item -ItemType Directory -Path $tempFolder -Force | Out-Null
 }
 
 Write-Host "`nDownload folder: $tempFolder" -ForegroundColor Cyan
-
-# Initialize log
-"Installation Log - $(Get-Date)" | Out-File $logFile -Encoding UTF8
 
 # Results tracking
 $results = @{
@@ -592,7 +667,10 @@ foreach ($skip in $skippedOptical) {
     $results.Skipped += "$($skip.Name) (no optical drive)"
 }
 
-# ============================================
+foreach ($skip in $skippedByConfig) {
+    $results.Skipped += "$skip (disabled in config)"
+}
+
 # PROCESS EACH SOFTWARE
 # ============================================
 
@@ -655,14 +733,15 @@ foreach ($app in $toInstall) {
         continue
     }
     
-    $filePath = Join-Path $tempFolder $fileName
-    
+    # In the main processing loop, use Join-Path and -LiteralPath
+    $filePath = Join-Path -Path $tempFolder -ChildPath $fileName
+
     # Download
     $downloadSuccess = Start-Download -Url $downloadUrl -OutFile $filePath -DisplayName $name
-    
-    if ($downloadSuccess -and (Test-Path $filePath)) {
-        $fileSize = (Get-Item $filePath).Length / 1MB
-        
+
+    if ($downloadSuccess -and (Test-Path -LiteralPath $filePath)) {
+        $fileSize = (Get-Item -LiteralPath $filePath).Length / 1MB
+            
         if ($fileSize -ge $app.MinSize) {
             # Install
             $installSuccess = Install-Software -FilePath $filePath -Arguments $app.InstallArgs -Name $name -IsMSI $app.IsMSI
@@ -684,20 +763,15 @@ foreach ($app in $toInstall) {
     }
 }
 
-# ============================================
 # CLEANUP
 # ============================================
 
 if ($cleanupAfterInstall) {
     Write-Host "`nCleaning up temporary files..." -ForegroundColor Yellow
     Start-Sleep -Seconds 2
-    Remove-Item -Path $tempFolder -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item -LiteralPath $tempFolder -Recurse -Force -ErrorAction SilentlyContinue
     Write-Host "Done." -ForegroundColor Green
 }
-
-# ============================================
-# SUMMARY
-# ============================================
 
 Write-Host "`n+============================================+" -ForegroundColor Cyan
 Write-Host "|            INSTALLATION SUMMARY           |" -ForegroundColor Cyan
@@ -740,29 +814,19 @@ else {
     Write-Host "Some items failed. See details above." -ForegroundColor Yellow
 }
 
-Write-Host "`nLog file: $logFile" -ForegroundColor Gray
+# DESKTOP ICON ARRANGEMENT
+# ============================================
 
-# Reboot prompt
-#if ($results.Installed.Count -gt 0) {
-#    Write-Host ""
-#    $reboot = Read-Host "Restart computer now? (y/N)"
-#    if ($reboot -eq 'y' -or $reboot -eq 'Y') {
-#        Write-Host "Restarting in 10 seconds..." -ForegroundColor Yellow
-#        Start-Sleep -Seconds 10
-#        Restart-Computer -Force
-#    }
-#}
-
-Write-Host ""
-#pause
-Write-Output "----- Change Order of Desktop Icons -----"
+Write-Output "`n----- Change Order of Desktop Icons -----"
 try {
-  . "$PSScriptRoot\REICON.ps1"
-} catch {
-  Write-Output "FUCK, the Module wont load ... DAMIT"
+    . "$PSScriptRoot\REICON.ps1"
 }
+catch {
+    Write-Output "Warning: Could not load REICON module"
+}
+
 $PublicDesktop = "$env:PUBLIC\Desktop"
-Remove-Item "$PublicDesktop\Microsoft Edge.lnk" -Force
+Remove-Item "$PublicDesktop\Microsoft Edge.lnk" -Force -ErrorAction SilentlyContinue
 Set-IconPositionWithSwap -Name "Dieser PC" -X 36 -Y 2
 Set-IconPositionWithSwap -Name "Papierkorb" -X 36 -Y 102
 Set-IconPositionWithSwap -Name "Firefox" -X 36 -Y 202
@@ -772,3 +836,5 @@ Set-IconPositionWithSwap -Name "Adobe Acrobat" -X 36 -Y 502
 Set-IconPositionWithSwap -Name "VLC media player" -X 36 -Y 602
 Set-IconPositionWithSwap -Name "PCSpezialist Fernwartung" -X 1836 -Y 2
 Set-IconPositionWithSwap -Name "CDBurnerXP" -X 36 -Y 702
+
+Write-Host ""

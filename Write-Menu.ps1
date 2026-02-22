@@ -573,7 +573,13 @@ function Write-Menu {
                     break
                 }
             }
-
+            # Open configuration menu (C key)
+            'C' {
+                Clear-Host
+                [System.Console]::CursorVisible = $true
+                $inputLoop = $false
+                return '__CONFIG__'
+            }
             # Confirm selection (Enter key for single-select only)
             'Enter' {
                 # Check if -MultiSelect has been enabled - if so, this is handled above by selection logic

@@ -1,5 +1,15 @@
 # PC-Spezialist Debloater v3.4 based on: WinConfigHelper v5.1 - UI Script
 
+# --- Software Selection Configuration ---
+$script:SoftwareToInstall = @{
+    Firefox     = $true
+    Thunderbird = $true
+    LibreOffice = $true
+    VLC         = $true
+    WinRAR      = $true
+    CDBurnerXP  = $true
+}
+
 # --- Script Definitions ---
 $scripts = @(
     # Restore Point
@@ -14,39 +24,27 @@ $scripts = @(
     [pscustomobject]@{ Name = 'Remove Office'; File = 'Cleanup/OfficeScrubber/OfficeScrubber.cmd' },
     # Fixes & Misc.
     [pscustomobject]@{ Name = 'Disable Bitlocker'; File = 'misc/DisableBitlocker.ps1' },
-    [pscustomobject]@{ Name = 'Installs Firefox, VLC, etc'; File = 'misc/SOFTWARE.ps1' },
-    [pscustomobject]@{ Name = 'Set FireFox, VLC, etc as default'; File = 'misc/default_apps.bat' },
+    [pscustomobject]@{ Name = 'Install Software'; File = 'misc/SOFTWARE.ps1' },
+    [pscustomobject]@{ Name = 'Set FireFox, VLC, etc as default'; File = @('misc/default_apps.bat', 'misc/Set-FirefoxHomepage.ps1' ) }, 
     [pscustomobject]@{ Name = 'StartMenu & Taskbar Manager'; File = @('misc/StartMenuManager.ps1', 'misc/TaskbarManager.ps1') },
     # Cleaners
     [pscustomobject]@{ Name = 'TempCleanup'; File = 'Cleanup/TempFileCleanup_Tron.bat' }
 )
 
 # --- Window Configuration ---
-# Set optimal window size and center it
 function Set-WindowSize {
     try {
-        # Get current buffer size
         $currentBuffer = $host.UI.RawUI.BufferSize
-        
-        # Set desired window dimensions
         $windowWidth = 45
         $windowHeight = 26
         
         $newBufferWidth = [Math]::Max($windowWidth, $currentBuffer.Width)
-        $newBufferHeight = [Math]::Max(3000, $currentBuffer.Height)  # Keep a large buffer height for scrolling
+        $newBufferHeight = [Math]::Max(3000, $currentBuffer.Height)
         
-        # Set buffer size first (before setting window size)
         $host.UI.RawUI.BufferSize = New-Object System.Management.Automation.Host.Size($newBufferWidth, $newBufferHeight)
-        
-        # Now set the window size
         $host.UI.RawUI.WindowSize = New-Object System.Management.Automation.Host.Size($windowWidth, $windowHeight)
-        
-        # Reset window position to top-left (0,0) to avoid position errors
-        # The actual centering is handled by the WindowCentering class
         $host.UI.RawUI.WindowPosition = New-Object System.Management.Automation.Host.Coordinates(0, 0)
-        
     } catch {
-        # If window sizing fails, continue without it
         Write-Warning "Could not set window size: $($_.Exception.Message)"
     }
 }
@@ -89,8 +87,7 @@ public class WindowCentering {
 }
 "@
 
-# Helper function to center the console window
-function Center-ConsoleWindow {
+function Set-ConsoleWindowCentered {
     $handle = (Get-Process -Id $pid).MainWindowHandle
     if ($handle -ne [IntPtr]::Zero) {
         [WindowCentering]::CenterWindow($handle)
@@ -100,8 +97,14 @@ function Center-ConsoleWindow {
 # Apply window configuration
 Add-Type -AssemblyName System.Windows.Forms -ErrorAction SilentlyContinue
 Set-WindowSize
-Start-Sleep -Milliseconds 200  # Allow window to fully initialize
-Center-ConsoleWindow
+Start-Sleep -Milliseconds 200
+Set-ConsoleWindowCentered
+
+# --- Auto Update (GitHub) ---
+try {
+    . "$PSScriptRoot\GitHubUpdater.ps1"
+    Invoke-GitHubAutoUpdate -RepoOwner 'NickWinterCode' -RepoName 'PCS_Debloater' -Branch 'main' -ManifestPath 'update/manifest.json' -ProjectRoot $PSScriptRoot -EntryScriptRelativePath 'MainMenuScript.ps1' -Quiet
+} catch { }
 
 # --- Import Required Functions ---
 try {
@@ -112,12 +115,69 @@ try {
     exit
 }
 
+# --- Software Configuration Menu ---
+function Show-SoftwareConfigMenu {
+    $softwareList = @('Firefox', 'Thunderbird', 'LibreOffice', 'VLC', 'WinRAR', 'CDBurnerXP')
+    
+    # Pre-select currently enabled software
+    $preSelected = @()
+    foreach ($sw in $softwareList) {
+        if ($script:SoftwareToInstall[$sw]) {
+            $preSelected += $sw
+        }
+    }
+    
+    # Show selection menu
+    $selectedSoftware = @(Write-Menu -Title "  Software Configuration`n    Space/Enter = Toggle`n    Tab = Confirm`n    A=all | U=none | Esc=back" -Entries $softwareList -MultiSelect)
+    
+    # If user pressed Escape, Write-Menu returns $null — @($null) gives count 1 with a null element
+    # So check for actual null BEFORE wrapping, or check content after
+    if ($selectedSoftware.Count -eq 1 -and $null -eq $selectedSoftware[0]) {
+        return
+    }
+    
+    # Reset all selections to false
+    foreach ($key in @($script:SoftwareToInstall.Keys)) {
+        $script:SoftwareToInstall[$key] = $false
+    }
+    
+    # Set selected ones to true — no .Count check needed now, foreach handles empty arrays fine
+    foreach ($sw in $selectedSoftware) {
+        if ($sw -and $script:SoftwareToInstall.ContainsKey($sw)) {
+            $script:SoftwareToInstall[$sw] = $true
+        }
+    }
+    
+    # Show confirmation
+    Clear-Host
+    Write-Host ""
+    Write-Host "  Software Configuration Saved!" -ForegroundColor Green
+    Write-Host "  ==============================" -ForegroundColor Gray
+    Write-Host ""
+    foreach ($sw in $softwareList) {
+        if ($script:SoftwareToInstall[$sw]) {
+            Write-Host "  [X] $sw" -ForegroundColor Green
+        } else {
+            Write-Host "  [ ] $sw" -ForegroundColor DarkGray
+        }
+    }
+    Write-Host ""
+    Write-Host "  Press any key to continue..." -ForegroundColor Yellow
+    [System.Console]::ReadKey($true) | Out-Null
+}
+
+function Export-SoftwareConfig {
+    # Create config file for SOFTWARE.ps1 to read
+    $configPath = Join-Path $PSScriptRoot "misc\software_config.json"
+    $script:SoftwareToInstall | ConvertTo-Json | Set-Content -Path $configPath -Force
+}
+
 # --- Main Logic ---
 function Show-MainMenu {
     $scriptNames = $scripts.Name
     
-    # Display the menu and get the user's selections
-    $selectedNames = Write-Menu -Title "  PC-Spezialist Optimizer v3.4 `n    Enter/Space = Select`n    Tab = Confirm`n    A=all | U=none" -Entries $scriptNames -MultiSelect
+    # Display the menu with C key hint
+    $selectedNames = Write-Menu -Title "  PC-Spezialist Optimizer v3.5 `n    Enter/Space = Select`n    Tab = Confirm | C = Config`n    A=all | U=none" -Entries $scriptNames -MultiSelect
     return $selectedNames
 }
 
@@ -152,13 +212,15 @@ function Invoke-SelectedScripts($selectedScripts) {
                     $host.UI.RawUI.BufferSize = New-Object System.Management.Automation.Host.Size(99, 3000)
                     $host.UI.RawUI.WindowSize = New-Object System.Management.Automation.Host.Size(99, 40)
                     $host.UI.RawUI.WindowPosition = New-Object System.Management.Automation.Host.Coordinates(0, 0)
-                } catch {
-                    # Continue even if resizing fails
-                }
+                } catch { }
                 
-                # Re-center window after resize
                 Start-Sleep -Milliseconds 100
-                Center-ConsoleWindow
+                Set-ConsoleWindowCentered
+                
+                # Export software config before running SOFTWARE.ps1
+                if ($file -like "*SOFTWARE.ps1*") {
+                    Export-SoftwareConfig
+                }
                 
                 Invoke-LoggedScript -ScriptPath $scriptPath
             } catch {
@@ -172,18 +234,32 @@ function Invoke-SelectedScripts($selectedScripts) {
     }
 }
 
-# Main program loop
-$selectedNames = Show-MainMenu
+# --- Main Program Loop ---
+do {
+    $selectedNames = Show-MainMenu
 
-if ($null -eq $selectedNames -or $selectedNames.Count -eq 0) {
-    Clear-Host
-    Write-Host "No scripts selected. Exiting." -ForegroundColor Yellow
-} else {
-    $selectedScripts = $scripts | Where-Object { $_.Name -in $selectedNames }
+    # Check if user pressed C for config
+    if ($selectedNames -eq '__CONFIG__') {
+        Show-SoftwareConfigMenu
+        continue
+    }
     
-    # Run the selected scripts immediately
+    # Force into array so .Count always works
+    $selectedNames = @($selectedNames)
+    
+    # Check if user made a selection or cancelled
+    if ($selectedNames.Count -eq 0 -or ($selectedNames.Count -eq 1 -and $null -eq $selectedNames[0])) {
+        Clear-Host
+        Write-Host "No scripts selected. Exiting." -ForegroundColor Yellow
+        break
+    }
+        
+    # Run selected scripts
+    $selectedScripts = $scripts | Where-Object { $_.Name -in $selectedNames }
     Invoke-SelectedScripts $selectedScripts
-}
+    break
+    
+} while ($true)
 
 Write-Host "Press any key to exit..."
 [System.Console]::ReadKey($true) | Out-Null

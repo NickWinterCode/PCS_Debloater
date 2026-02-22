@@ -1,4 +1,1 @@
-+ Clean Startmenu Pins (remove Edge, LinkedIn)
-+ Uninstall Outlook new
-+ FIX LibreOffice Desktop Icon Placement
 + Install Adobe Acrobat (localversion from %~dp0/..)
