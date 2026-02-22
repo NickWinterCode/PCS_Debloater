@@ -1,2 +1,5 @@
-+ Ausblenden von Dateiendungen
-+ Theme in Ruhe lassen
++ Remove the Uninstallation of OneDrive without enabling it from MainMenu
++ Enable the Option to select Windows Spotlight in settings (Atlas Fix)
++ fix winget on newinstallations, because chocolatey SUCKS!
+	- ... its ok but Acrobat SUCKS hard
+	- FUCK YOU ADOBE

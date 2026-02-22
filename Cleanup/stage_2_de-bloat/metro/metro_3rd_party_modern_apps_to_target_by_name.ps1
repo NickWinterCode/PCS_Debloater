@@ -12,8 +12,8 @@ $ErrorActionPreference = "SilentlyContinue"
 ########
 # PREP #
 ########
-#$METRO_3RD_PARTY_MODERN_APPS_TO_TARGET_BY_NAME_SCRIPT_VERSION = "1.7.5"
-#$METRO_3RD_PARTY_MODERN_APPS_TO_TARGET_BY_NAME_SCRIPT_DATE = "2025-01-09"
+$METRO_3RD_PARTY_MODERN_APPS_TO_TARGET_BY_NAME_SCRIPT_VERSION = "1.7.5"
+$METRO_3RD_PARTY_MODERN_APPS_TO_TARGET_BY_NAME_SCRIPT_DATE = "2025-01-09"
 
 # Needed for Removal
 $AppxPackages = Get-AppxProvisionedPackage -online | select-object PackageName,Displayname
@@ -23,8 +23,8 @@ $Script:AppxCount3rd = 0
 # App Removal function
 Function Remove-App([String]$AppName){
 	If($AppxPackages.DisplayName -match $AppName -or $ProPackageList.Name -match $AppName ) {
-		$PackageFullName = ($ProPackageList | Where-Object {$_.Name -like $AppName}).PackageFullName
-		$ProPackageFullName = ($AppxPackages | Where-Object {$_.Displayname -like $AppName}).PackageName
+		$PackageFullName = ($ProPackageList | where {$_.Name -like $AppName}).PackageFullName
+		$ProPackageFullName = ($AppxPackages | where {$_.Displayname -like $AppName}).PackageName
 
 		If($PackageFullName -is [array]){
 			For($i=0 ;$i -lt $PackageFullName.Length ;$i++) {
@@ -55,10 +55,10 @@ Function Remove-App([String]$AppName){
 # EXECUTE #
 ###########
 # Active identifiers
-Remove-App "DragonManiaLegends"
-Remove-App "HiddenCityMysteryofShadows"
-Remove-App "MarchofEmpires"
-Remove-App "toolbar"
+Remove-App "*DragonManiaLegends"
+Remove-App "*HiddenCityMysteryofShadows"
+Remove-App "*MarchofEmpires"
+Remove-App "*toolbar*"
 Remove-App "06DAC6F6.StumbleUpon"
 Remove-App "09B6C2D8.TheTreasuresofMontezuma3"
 Remove-App "0D16BB98.Houzz"
@@ -870,61 +870,6 @@ Remove-App "www.uniquehomestays.com-847F70B0"
 Remove-App "www.urbandictionary.com-668FDB9"
 Remove-App "www.youtube.com-756BE99A"
 Remove-App "zuukaInc.iStoryTimeLibrary*"
-Remove-App "AmazonVideo.PrimeVideo"
-Remove-App "fitbit"
-Remove-App "LinkedInforWindows"
-Remove-App "Plex"
-Remove-App "PolarrPhotoEditorAcademicEdition"
-Remove-App "SlingTV"
-Remove-App "Viber"
-Remove-App "ACGMediaPlayer"
-Remove-App "ActiproSoftwareLLC"
-Remove-App "AdobeSystemsIncorporated.AdobePhotoshopExpress"
-Remove-App "Amazon.com.Amazon"
-Remove-App "AmazonVideo.PrimeVideo"
-Remove-App "Asphalt8Airborne"
-Remove-App "AutodeskSketchBook"
-Remove-App "CaesarsSlotsFreeCasino"
-Remove-App "COOKINGFEVER"
-Remove-App "CyberLinkMediaSuiteEssentials"
-Remove-App "DisneyMagicKingdoms"
-Remove-App "Disney"
-Remove-App "DrawboardPDF"
-Remove-App "Duolingo-LearnLanguagesforFree"
-Remove-App "EclipseManager"
-Remove-App "Facebook"
-Remove-App "FarmVille2CountryEscape"
-Remove-App "fitbit"
-Remove-App "Flipboard"
-Remove-App "HiddenCity"
-Remove-App "HULULLC.HULUPLUS"
-Remove-App "iHeartRadio"
-Remove-App "Instagram"
-Remove-App "king.com.BubbleWitch3Saga"
-Remove-App "king.com.CandyCrushSaga"
-Remove-App "king.com.CandyCrushSodaSaga"
-Remove-App "LinkedInforWindows"
-Remove-App "MarchofEmpires"
-Remove-App "Netflix"
-Remove-App "NYTCrossword"
-Remove-App "OneCalendar"
-Remove-App "PandoraMediaInc"
-Remove-App "PhototasticCollage"
-Remove-App "PicsArt-PhotoStudio"
-Remove-App "Plex"
-Remove-App "PolarrPhotoEditorAcademicEdition"
-Remove-App "RoyalRevolt"
-Remove-App "Shazam"
-Remove-App "Sidia.LiveWallpaper"
-Remove-App "SlingTV"
-Remove-App "Spotify"
-Remove-App "TikTok"
-Remove-App "TuneInRadio"
-Remove-App "Twitter"
-Remove-App "Viber"
-Remove-App "WinZipUniversal"
-Remove-App "Wunderlist"
-Remove-App "XING"
 
 # Inactive identifers
 #Remove-App "Netflix*"

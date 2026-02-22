@@ -1,4 +1,4 @@
-# PC-Spezialist Debloater v3.1 based on: WinConfigHelper v5.1 - UI Script
+# PC-Spezialist Debloater v3.2 based on: WinConfigHelper v5.1 - UI Script
 
 # --- Window Configuration ---
 # Set optimal window size and center it
@@ -9,8 +9,8 @@ function Set-WindowSize {
         $screenHeight = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds.Height
         
         # Set desired window dimensions (adjust as needed)
-        $windowWidth = 43
-        $windowHeight = 30 
+        $windowWidth = 45
+        $windowHeight = 29 
         
         # Calculate center position
         $left = [math]::Floor(($screenWidth / 8 - $windowWidth) / 2)  # Divide by 8 for character width approximation
@@ -94,22 +94,24 @@ $scripts = @(
     [pscustomobject]@{ Name = 'Systeminfo'; File = 'misc/ProdInfo.ps1' },
     [pscustomobject]@{ Name = 'Wallpaper + Remotesoftw.'; File = 'misc\PreSetup.ps1' },
     # Performance & Privacy Tweakers
-    [pscustomobject]@{ Name = 'Advanced Debloater'; File = 'advanceddebloater.ps1' },
+    [pscustomobject]@{ Name = 'Essential Tweaks'; File = 'Essential_Tweaks.ps1' },
     [pscustomobject]@{ Name = 'Optimizer Helper v16.7'; File = 'Optimizer/OptimizeHelper_batch.bat' },
-    [pscustomobject]@{ Name = 'PC-Spezialist Main Script'; File = 'PC_Spezialist.ps1' },
+    #[pscustomobject]@{ Name = 'PC-Spezialist Main Script'; File = 'PC_Spezialist.ps1' },
     # Debloaters
     [pscustomobject]@{ Name = 'Remove MS Bloat'; File = 'Cleanup/metro_Microsoft_modern_apps_to_target_by_name.ps1' },
     [pscustomobject]@{ Name = 'Remove 3rd Party Bloat'; File = 'Cleanup/metro_3rd_party_modern_apps_to_target_by_name.ps1' },
     [pscustomobject]@{ Name = 'Remove Edge'; File = 'Cleanup/EdgeRemover/RemoveEdge_privacy.sexy.bat' },
     [pscustomobject]@{ Name = 'Remove OneDrive'; File = 'Cleanup/OneDriveRemover/OneDriveRemover.bat' },
+    [pscustomobject]@{ Name = 'Remove Office'; File = 'Cleanup/OfficeScrubber/OfficeScrubber.cmd' },
+    [pscustomobject]@{ Name = 'StartMenu Ad Remover'; File = 'Cleanup/StartMenu_Ad_Remover.bat' },
     # Fixes & Misc.
-    [pscustomobject]@{ Name = 'Bitlocker Fix'; File = 'misc/DisableBitlocker.ps1' },
-    [pscustomobject]@{ Name = 'Visual Effects'; File = 'fixes/VisualEffects.bat' },
-    [pscustomobject]@{ Name = 'Installs Firefox, VLC, etc'; File = 'misc/Program_Installer.bat' },
+    [pscustomobject]@{ Name = 'Disable Bitlocker'; File = 'misc/DisableBitlocker.ps1' },
+    #[pscustomobject]@{ Name = 'Visual Effects'; File = 'fixes/VisualEffects.bat' },
+    [pscustomobject]@{ Name = 'Installs Firefox, VLC, etc'; File = 'misc/software_installer.ps1' },
     [pscustomobject]@{ Name = 'Set FireFox, VLC, etc as default'; File = 'misc/default_apps.bat' },
     [pscustomobject]@{ Name = 'Zeitanpassung [FIX]'; File = 'fixes/time_changer.bat' },
     [pscustomobject]@{ Name = 'Fix Window Snapping [FIX]'; File = 'fixes/SnapAssist.bat' },
-    [pscustomobject]@{ Name = 'Enable Gamebar [FIX]'; File = 'fixes/EnableGamebar.bat' },
+    #[pscustomobject]@{ Name = 'Enable Gamebar [FIX]'; File = 'fixes/EnableGamebar.bat' },
     # Cleaners
     [pscustomobject]@{ Name = 'TempCleanup'; File = 'Cleanup/TempFileCleanup_Tron.bat' },
     [pscustomobject]@{ Name = 'Deeper Cleanup'; File = 'Cleanup/Cleanup_privacy.sexy.bat' }
@@ -120,7 +122,7 @@ function Show-MainMenu {
     $scriptNames = $scripts.Name
     
     # Display the menu and get the user's selections
-    $selectedNames = Write-Menu -Title "  PC-Spezialist Optimizer v5`n    Tab = Confirm`n    A=all | U=none" -Entries $scriptNames -MultiSelect
+    $selectedNames = Write-Menu -Title "  PC-Spezialist Optimizer v3.2 `n    Enter/Space = Select`n    Tab = Confirm`n    A=all | U=none" -Entries $scriptNames -MultiSelect
     return $selectedNames
 }
 

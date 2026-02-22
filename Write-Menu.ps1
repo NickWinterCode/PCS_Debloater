@@ -196,7 +196,7 @@ function Write-Menu {
         }
 
         # Set menu height
-        $script:pageSize = ($host.UI.RawUI.WindowSize.Height - 8)
+        $script:pageSize = ($host.UI.RawUI.WindowSize.Height - 10)
 
         # Convert entries to object
         $script:menuEntries = @()

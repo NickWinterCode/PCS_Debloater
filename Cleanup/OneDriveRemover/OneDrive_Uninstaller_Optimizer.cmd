@@ -28,5 +28,4 @@ echo Removing OneDrive from the Explorer Side Panel...
 echo.
 REG DELETE "HKEY_CLASSES_ROOT\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" /f > NUL 2>&1
 REG DELETE "HKEY_CLASSES_ROOT\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" /f > NUL 2>&1
-call %~dp0OneDriveRemover.bat
-powershell -ExecutionPolicy Bypass -File .\Uninstall-OneDrive.ps1
+exit /b 0

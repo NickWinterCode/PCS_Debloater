@@ -1,9 +1,6 @@
 # original from: https://github.com/memstechtips/UnattendedWinstall/blob/main/UWScript.ps1
 $tweaks = @(
    "RequireAdmin", 
-   #"CreateRestorePoint",
-   #"Test-InternetConnection",
-   #"Test-WinGetStatus",  
    "Set-AppsRegistry", 
    "Uninstall-OneDrive", 
    "Remove-OneDrive", 
@@ -34,7 +31,8 @@ $tweaks = @(
 
    "Set-UserCustomization",
    "ShowThisPC",
-   "EnableNetworkDiscovery"
+   #"EnableNetworkDiscovery",
+   "None"
 )
 
 
@@ -350,9 +348,9 @@ function Disable-Recall {
 function Remove-Apps {
     Write-Host "Removing Pre-installed Apps and Features. Please wait . . ."
     # Bloatware Apps
-    Get-AppxPackage -AllUsers |
-    Where-Object { $appxPackages -contains $_.Name } |
-    Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue  
+    #Get-AppxPackage -AllUsers |
+    #Where-Object { $appxPackages -contains $_.Name } |
+    #Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue  
     # Legacy Windows Features & Apps
     Get-WindowsCapability -Online |
     Where-Object { $capabilities -contains ($_.Name -split '~')[0] } |
@@ -1014,31 +1012,6 @@ Windows Registry Editor Version 5.00
 function Set-RecommendedHKCURegistry {
     Write-Host "Optimizing User Registry . . ."
 
-    # Set Wallpaper (Helper Function for Recommended User Settings)
-    $defaultWallpaperPath = "C:\Windows\Web\4K\Wallpaper\Windows\PC-Spezialist_BG.jpg"
-    $darkModeWallpaperPath = "C:\Windows\Web\4K\Wallpaper\Windows\PC-Spezialist_BG.jpg"
-
-    function Set-Wallpaper ($wallpaperPath) {
-        reg.exe add "HKEY_CURRENT_USER\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "$wallpaperPath" /f  
-        # Notify the system of the change
-        rundll32.exe user32.dll, UpdatePerUserSystemParameters
-    }
-
-    # Check Windows version
-    $windowsVersion = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion").CurrentBuild
-
-    # Apply appropriate wallpaper based on Windows version or existence of dark mode wallpaper
-    if ($windowsVersion -ge 22000) {
-        # Assuming Windows 11 starts at build 22000
-        if (Test-Path $darkModeWallpaperPath) {
-            Set-Wallpaper -wallpaperPath $darkModeWallpaperPath
-        }
-    }
-    else {
-        # Apply default wallpaper for Windows 10
-        Set-Wallpaper -wallpaperPath $defaultWallpaperPath
-    }
-
     $MultilineComment = @"
 Windows Registry Editor Version 5.00
 
@@ -1218,7 +1191,7 @@ Windows Registry Editor Version 5.00
 ; disable fix scaling for apps
 ; disable menu show delay
 [HKEY_CURRENT_USER\Control Panel\Desktop]
-"UserPreferencesMask"=hex(2):9e,1e,07,80,12,00,00,00
+;"UserPreferencesMask"=hex(2):9e,1e,07,80,12,00,00,00
 "FontSmoothing"="2"
 "LogPixels"=dword:00000060
 "Win8DpiScaling"=dword:00000001
@@ -2081,7 +2054,7 @@ function Set-RecommendedPowerSettings {
         'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FlyoutMenuSettings /v ShowSleepOption /t REG_DWORD /d 0', # Hides the Sleep option from the Power menu
         'HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Power /v HiberbootEnabled /t REG_DWORD /d 0', # Disables Fast Startup (Hiberboot)
         'HKLM\SYSTEM\ControlSet001\Control\Power\PowerSettings\54533251-82be-4824-96c1-47b60b740d00\0cc5b647-c1df-4637-891a-dec35c318583 /v ValueMax /t REG_DWORD /d 0', # Unparks CPU cores by setting the maximum processor state
-        'HKLM\SYSTEM\CurrentControlSet\Control\Power\PowerThrottling /v PowerThrottlingOff /t REG_DWORD /d 0', # Disables power throttling
+        #'HKLM\SYSTEM\CurrentControlSet\Control\Power\PowerThrottling /v PowerThrottlingOff /t REG_DWORD /d 0', # Disables power throttling
         'HKLM\System\ControlSet001\Control\Power\PowerSettings\2a737441-1930-4402-8d77-b2bebba308a3\0853a681-27c8-4100-a2fd-82013e970683 /v Attributes /t REG_DWORD /d 2', # Unhides "Hub Selective Suspend Timeout"
         'HKLM\System\ControlSet001\Control\Power\PowerSettings\2a737441-1930-4402-8d77-b2bebba308a3\d4e98f31-5ffe-4ce1-be31-1b38b384c009 /v Attributes /t REG_DWORD /d 2' # Unhides "USB 3 Link Power Management"
     )
@@ -2647,29 +2620,6 @@ Windows Registry Editor Version 5.00
 
                     # Import registry file silently
                     Regedit.exe /S "$env:TEMP\Optimize_User_Registry.reg"
-
-    # Set Wallpaper
-    $defaultWallpaperPath = "C:\Windows\Web\4K\Wallpaper\Windows\PC-Spezialist_BG.jpg"
-    $darkModeWallpaperPath = "C:\Windows\Web\4K\Wallpaper\Windows\PC-Spezialist_BG.jpg"
-
-    function Set-Wallpaper ($wallpaperPath) {
-        reg.exe add "HKEY_CURRENT_USER\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "$wallpaperPath" /f  
-        # Notify the system of the change
-        rundll32.exe user32.dll, UpdatePerUserSystemParameters
-    }
-
-    # Check Windows version
-    $windowsVersion = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion").CurrentBuild
-
-    # Apply appropriate wallpaper based on Windows version or existence of dark mode wallpaper
-    if ($windowsVersion -ge 22000) {  # Assuming Windows 11 starts at build 22000
-        if (Test-Path $darkModeWallpaperPath) {
-            Set-Wallpaper -wallpaperPath $darkModeWallpaperPath
-        }
-    } else {
-        # Apply default wallpaper for Windows 10
-        Set-Wallpaper -wallpaperPath $defaultWallpaperPath
-    }
     
 }
 

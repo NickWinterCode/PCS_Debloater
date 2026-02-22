@@ -7,7 +7,12 @@ Copy-Item "misc\PC-Spezialist_BG.jpg" -Destination "C:\Windows\Web\4K\Wallpaper\
 Copy-Item "misc\PCSpezialist Fernwartung.exe" -Destination "$env:USERPROFILE\Desktop\PCSpezialist Fernwartung.exe" -Force
 
 # This PC on desktop
-New-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" -Name "{20D04FE0-3AEA-1069-A2D8-08002B30309D}" -PropertyType DWord -Value 0 -Force
+Write-Output "Showing This PC ..."
+if (-not (Test-Path -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel))
+{
+	New-Item -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel -Force
+}
+New-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel -Name "{20D04FE0-3AEA-1069-A2D8-08002B30309D}" -PropertyType DWord -Value 0 -Force
 
 # Disables Screen Off and Sleepmode in powerplan
 powercfg /X monitor-timeout-ac 0

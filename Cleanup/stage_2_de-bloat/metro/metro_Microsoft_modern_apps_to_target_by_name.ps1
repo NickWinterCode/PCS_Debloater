@@ -1,5 +1,5 @@
 <#
-Purpose:       Script to remove many of the pre-loaded Microsoft Metro "modern App " bloatware. Called by Tron in Stage 2: De-bloat
+Purpose:       Script to remove many of the pre-loaded Microsoft Metro "modern app" bloatware. Called by Tron in Stage 2: De-bloat
                Add any AppX uninstall commands to this list to target them for removal
 Requirements:  1. Administrator access
                2. Windows 8 and up
@@ -54,27 +54,27 @@ Function Remove-App([String]$AppName){
 # EXECUTE #
 ###########
 # Active identifiers
-Remove-App "BrowserChoice"
-Remove-App "Microsoft.Advertising.JavaScript"
-Remove-App "Microsoft.Advertising.Xaml"
-Remove-App "Microsoft.BingFinance"
-Remove-App "Microsoft.BingFoodAndDrink"
-Remove-App "Microsoft.BingHealthAndFitness"
+Remove-App "BrowserChoice"                             # "Browser Choice" screen required by the EU antitrust regulation
+Remove-App "Microsoft.Advertising.JavaScript"          # Advertising framework
+Remove-App "Microsoft.Advertising.Xaml"                # Advertising framework
+Remove-App "Microsoft.BingFinance"                     # Money app - Financial news
+Remove-App "Microsoft.BingFoodAndDrink"                # Food and Drink app
+Remove-App "Microsoft.BingHealthAndFitness"            # Health and Fitness app
 Remove-App "Microsoft.BingMaps"
-Remove-App "Microsoft.BingNews"
-Remove-App "Microsoft.BingSports"
-Remove-App "Microsoft.BingTranslator"
-Remove-App "Microsoft.BingTravel"
+Remove-App "Microsoft.BingNews"                        # Generic news app
+Remove-App "Microsoft.BingSports"                      # Sports app - Sports news
+Remove-App "Microsoft.BingTranslator"                  # Translator app - Bing Translate
+Remove-App "Microsoft.BingTravel"                      # Travel app
 Remove-App "Microsoft.BioEnrollment"
 Remove-App "Microsoft.ConnectivityStore"
 Remove-App "Microsoft.DiagnosticDataViewer"
 Remove-App "Microsoft.ForzaHorizon3Demo"
 Remove-App "Microsoft.ForzaMotorsport7Demo"
 Remove-App "Microsoft.FrenchRiviera"
-Remove-App "Microsoft.FreshPaint"
-Remove-App "Microsoft.GamingApp "
-Remove-App "Microsoft.GetHelp"
-Remove-App "Microsoft.Getstarted"
+Remove-App "Microsoft.FreshPaint"                      # Canvas app
+Remove-App "Microsoft.GamingApp"
+Remove-App "Microsoft.GetHelp"                         # Get Help link
+Remove-App "Microsoft.Getstarted"                      # Get Started link
 Remove-App "Microsoft.HelpAndTips"
 Remove-App "Microsoft.HoganThreshold"
 Remove-App "Microsoft.LanguageExperiencePackcs-CZ"
@@ -94,107 +94,66 @@ Remove-App "Microsoft.LanguageExperiencePackuk-UA"
 Remove-App "Microsoft.LanguageExperiencePackvi-VN"
 Remove-App "Microsoft.LanguageExperiencePackzh-CN"
 Remove-App "Microsoft.LanguageExperiencePackzh-TW"
-Remove-App "Microsoft.Lucille"
-Remove-App "Microsoft.Messaging"
-Remove-App "Microsoft.MicrosoftJackpot"
-Remove-App "Microsoft.MicrosoftJigsaw"
-Remove-App "Microsoft.MicrosoftMahjong"
+Remove-App "Microsoft.Lucille"                         # "Browser Choice" screen required by the EU antitrust regulation
+Remove-App "Microsoft.Messaging"                       # Messaging app
+Remove-App "Microsoft.MicrosoftJackpot"                # Jackpot app
+Remove-App "Microsoft.MicrosoftJigsaw"                 # Jigsaw app
+Remove-App "Microsoft.MicrosoftMahjong"                # Advertising framework
 Remove-App "Microsoft.MicrosoftOfficeHub"
-Remove-App "Microsoft.MicrosoftPowerBIForWindows"
+Remove-App "Microsoft.MicrosoftPowerBIForWindows"      # Power BI app - Business analytics
 Remove-App "Microsoft.MicrosoftRewards"
 Remove-App "Microsoft.MicrosoftSudoku"
 Remove-App "Microsoft.MicrosoftTreasureHunt"
 Remove-App "Microsoft.MinecraftUWP"
-Remove-App "Microsoft.MovieMoments"
+Remove-App "Microsoft.MovieMoments"                    # imported from stage_2_de-bloat.bat
 Remove-App "Microsoft.NetworkSpeedTest"
-Remove-App "Microsoft.Office.Sway"
-Remove-App "Microsoft.OneConnect"
-Remove-App "Microsoft.People"
+Remove-App "Microsoft.Office.Sway"                     # Sway app
+Remove-App "Microsoft.OneConnect"                      # OneConnect app
+Remove-App "Microsoft.People"                          # People app
 Remove-App "Microsoft.SeaofThieves"
-Remove-App "Microsoft.SkypeApp "
+Remove-App "Microsoft.SkypeApp"                        # Get Skype link
 Remove-App "Microsoft.SkypeWiFi"
-Remove-App "Microsoft.Studios.Wordament"
-Remove-App "Microsoft.SurfaceDiagnostics"
+Remove-App "Microsoft.Studios.Wordament"               # imported from stage_2_de-bloat.bat
+Remove-App "Microsoft.SurfaceDiagnostics"              # added 2021-06-02
 Remove-App "Microsoft.Windows.DevHome"
 Remove-App "Microsoft.Windows.FeatureOnDemand.InsiderHub"
 Remove-App "Microsoft.WindowsAppRuntime.CBS"
-Remove-App "Microsoft.WindowsFeedbackHub"
+Remove-App "Microsoft.WindowsFeedbackHub"              # Feedback app
 Remove-App "Microsoft.WindowsReadingList"
 Remove-App "Microsoft.WorldNationalParks"
 Remove-App "MicrosoftCorporationII.QuickAssist"
 Remove-App "Windows.CBSPreview"
 Remove-App "Windows.ContactSupport"
 
-#Inactiveidentifers
-#Remove-App "Microsoft.Appconnector"
-Remove-App "Microsoft.BingWeather"
-Remove-App "Microsoft.CommsPhone"
-Remove-App "Microsoft.MSPaint"
-Remove-App "Microsoft.Microsoft3DViewer"
-Remove-App "Microsoft.MicrosoftSolitaireCollection"
-Remove-App "Microsoft.MicrosoftStickyNotes"
-Remove-App "Microsoft.Office.OneNote"
-#Remove-App "Microsoft.Windows.Photos"
-#Remove-App "Microsoft.WindowsAlarms"
-#Remove-App "Microsoft.WindowsCalculator"
-#Remove-App "Microsoft.WindowsCamera"
-Remove-App "Microsoft.WindowsMaps"
-Remove-App "Microsoft.WindowsSoundRecorder"
-#Remove-App "Microsoft.WindowsStore"
-Remove-App "Microsoft.Xbox*"
-Remove-App "Microsoft.Xbox.TCUI"
-Remove-App "Microsoft.XboxApp "
-Remove-App "Microsoft.XboxGameCallableUI"
-Remove-App "Microsoft.XboxGameOverlay"
-Remove-App "Microsoft.XboxGamingOverlay"
-Remove-App "Microsoft.XboxIdentityProvider"
-Remove-App "Microsoft.XboxSpeechToTextOverlay"
-Remove-App "Microsoft.Zune"
-Remove-App "Microsoft.ZuneMusic"
-Remove-App "Microsoft.ZuneVideo"
-Remove-App "Microsoft.windowscommunicationsapps"
-Remove-App "Clipchamp.Clipchamp"
-Remove-App "Microsoft.3DBuilder"
-Remove-App "Microsoft.549981C3F5F10"
-Remove-App "Microsoft.Copilot"
-Remove-App "Microsoft.MicrosoftJournal"
-Remove-App "Microsoft.MixedReality.Portal"
-Remove-App "Microsoft.News"
-Remove-App "Microsoft.Print3D"
-Remove-App "Microsoft.Todos"
-Remove-App "Microsoft.WindowsAlarms"
-Remove-App "MicrosoftCorporationII.MicrosoftFamily"
-Remove-App "MicrosoftTeams"
-Remove-App "MSTeams"
 
-
-#Activeidentifiers
-Remove-App "Microsoft.Whiteboard"
-Remove-App "Microsoft.BingNews_4.2.27001.0"
-Remove-App "Microsoft.HEIFImageExtension"
-Remove-App "Microsoft.HEVCVideoExtension"
-Remove-App "Microsoft.PowerAutomateDesktop"
-Remove-App "Microsoft.RawImageExtension"
-Remove-App "Microsoft.ScreenSketch"
-Remove-App "Microsoft.SecHealthUI"
-Remove-App "Microsoft.StorePurchaseApp "
-Remove-App "Microsoft.VP9VideoExtensions"
-Remove-App "Microsoft.WebMediaExtensions"
-Remove-App "Microsoft.WebpImageExtension"
-Remove-App "Microsoft.WindowsTerminal"
-Remove-App "Microsoft.YourPhone"
-Remove-App "MicrosoftWindows.Client.WebExperience"
-Remove-App "Microsoft.BingSearch"
-Remove-App "Microsoft.Windows."
-Remove-App "microsoft.windowscommunicationsapps"
-Remove-App "Microsoft.Office."
-Remove-App "Microsoft.OutlookForWindows"
-Remove-App "MicrosoftCorporationII."
-Remove-App "Microsoft.Xbox."
-Remove-App "Microsoft.OneDrive"
-Remove-App "Microsoft.Windows.Ai.Copilot.Provider"
-Remove-App "Microsoft.Copilot_8wekyb3d8bbwe"
-Remove-App "Microsoft.WindowsMeetNow"
+# Inactive identifers
+#Remove-App "Microsoft.Appconnector"                   # Not sure about this one
+#Remove-App "Microsoft.BingWeather"                    # Weather app
+#Remove-App "Microsoft.CommsPhone"                     # Phone app
+#Remove-App "Microsoft.MSPaint"                        # MS Paint (Paint 3D)
+#Remove-App "Microsoft.Microsoft3DViewer"              # 3D model viewer
+#Remove-App "Microsoft.MicrosoftSolitaireCollection"   # Solitaire collection
+#Remove-App "Microsoft.MicrosoftStickyNotes"           # Pulled from active list due to user requests
+#Remove-App "Microsoft.Office.OneNote"                 # Onenote app
+#Remove-App "Microsoft.Windows.Photos"                 # Photos app
+#Remove-App "Microsoft.WindowsAlarms"                  # Alarms and Clock app
+#Remove-App "Microsoft.WindowsCalculator"              # Calculator app
+#Remove-App "Microsoft.WindowsCamera"                  # Camera app
+#Remove-App "Microsoft.WindowsMaps"                    # Maps app
+#Remove-App "Microsoft.WindowsSoundRecorder"           # Sound Recorder app
+#Remove-App "Microsoft.WindowsStore"                   # Windows Store
+#Remove-App "Microsoft.Xbox*"
+#Remove-App "Microsoft.Xbox.TCUI"
+#Remove-App "Microsoft.XboxApp"
+#Remove-App "Microsoft.XboxGameCallableUI"
+#Remove-App "Microsoft.XboxGameOverlay"
+#Remove-App "Microsoft.XboxGamingOverlay"
+#Remove-App "Microsoft.XboxIdentityProvider"
+#Remove-App "Microsoft.XboxSpeechToTextOverlay"
+#Remove-App "Microsoft.Zune"                           # Zune collection of apps
+#Remove-App "Microsoft.ZuneMusic"
+#Remove-App "Microsoft.ZuneVideo"
+#Remove-App "Microsoft.windowscommunicationsapps"      # Calendar and Mail app
 
 ##########
 # Finish #

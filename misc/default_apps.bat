@@ -3,7 +3,7 @@ setlocal EnableExtensions
 
 cd %~dp0
 echo Setting App as default for
-echo VLC Movies
+echo VLC
 SetUserFTA.exe .webm VLC.webm 
 SetUserFTA.exe .mkv VLC.mkv 
 SetUserFTA.exe .flv VLC.flv 
@@ -44,8 +44,80 @@ SetUserFTA.exe .f4p VLC.f4p
 SetUserFTA.exe .f4a VLC.f4a 
 SetUserFTA.exe .f4b VLC.f4b 
 SetUserFTA.exe .mod VLC.mod 
+SetUserFTA.exe .3gp2 VLC.3gp2
+SetUserFTA.exe .3gpp VLC.3gpp
+SetUserFTA.exe .adt VLC.adt
+SetUserFTA.exe .adts VLC.adts
+SetUserFTA.exe .aif VLC.aif
+SetUserFTA.exe .aifc VLC.aifc
+SetUserFTA.exe .asx VLC.asx
+SetUserFTA.exe .dvr-ms VLC.dvr-ms
+SetUserFTA.exe .m1v VLC.m1v
+SetUserFTA.exe .m2t VLC.m2t
+SetUserFTA.exe .m2ts VLC.m2ts
+SetUserFTA.exe .m2v VLC.m2v
+SetUserFTA.exe .m3u VLC.m3u
+SetUserFTA.exe .mid VLC.mid
+SetUserFTA.exe .mka VLC.mka
+SetUserFTA.exe .mp2v VLC.mp2v
+SetUserFTA.exe .mpa VLC.mpa
+SetUserFTA.exe .mpv2 VLC.mpv2
+SetUserFTA.exe .rmi VLC.rmi
+SetUserFTA.exe .snd VLC.snd
+SetUserFTA.exe .ts VLC.ts
+SetUserFTA.exe .tts VLC.tts
+SetUserFTA.exe .vlt VLC.vlt
+SetUserFTA.exe .wpl VLC.wpl
+SetUserFTA.exe .wsz VLC.wsz
+SetUserFTA.exe .wtv VLC.wtv
+SetUserFTA.exe .wvx VLC.wvx
 
-echo Microsoft Photos
+:: VLC Music
+SetUserFTA.exe .3gp VLC.3gp 
+SetUserFTA.exe .aa VLC.aa 
+SetUserFTA.exe .aac VLC.aac 
+SetUserFTA.exe .aax VLC.aax 
+SetUserFTA.exe .act VLC.act 
+SetUserFTA.exe .aiff VLC.aiff 
+SetUserFTA.exe .alac VLC.alac 
+SetUserFTA.exe .amr VLC.amr 
+SetUserFTA.exe .ape VLC.ape 
+SetUserFTA.exe .au VLC.au 
+SetUserFTA.exe .awb VLC.awb 
+SetUserFTA.exe .dss VLC.dss 
+SetUserFTA.exe .dvf VLC.dvf 
+SetUserFTA.exe .flac VLC.flac 
+SetUserFTA.exe .gsm VLC.gsm 
+SetUserFTA.exe .iklax VLC.iklax 
+SetUserFTA.exe .ivs VLC.ivs 
+SetUserFTA.exe .m4a VLC.m4a 
+SetUserFTA.exe .m4b VLC.m4b 
+SetUserFTA.exe .m4p VLC.m4p 
+SetUserFTA.exe .mmf VLC.mmf 
+SetUserFTA.exe .mp3 VLC.mp3 
+SetUserFTA.exe .mpc VLC.mpc 
+SetUserFTA.exe .msv VLC.msv 
+SetUserFTA.exe .nmf VLC.nmf 
+SetUserFTA.exe .ogg VLC.ogg 
+SetUserFTA.exe .oga VLC.oga d
+SetUserFTA.exe .mogg VLC.mogg 
+SetUserFTA.exe .opus VLC.opus 
+SetUserFTA.exe .ra VLC.ra 
+SetUserFTA.exe .rm VLC.rm 
+SetUserFTA.exe .raw VLC.raw 
+SetUserFTA.exe .rf64 VLC.rf64 
+SetUserFTA.exe .sln VLC.sln 
+SetUserFTA.exe .tta VLC.tta 
+SetUserFTA.exe .voc VLC.voc 
+SetUserFTA.exe .vox VLC.vox 
+SetUserFTA.exe .wav VLC.wav 
+SetUserFTA.exe .wma VLC.wma 
+SetUserFTA.exe .wv VLC.wv 
+SetUserFTA.exe .webm VLC.webm 
+SetUserFTA.exe .8svx VLC.8svx 
+SetUserFTA.exe .cda VLC.cda
+
+::echo Microsoft Photos
 ::SetUserFTA.exe .ase AppX4mntx4h978m1v9gtzv0ewksfd6pmwsre
 ::SetUserFTA.exe .art AppX4mntx4h978m1v9gtzv0ewksfd6pmwsre
 ::SetUserFTA.exe .bmp AppX4mntx4h978m1v9gtzv0ewksfd6pmwsre
@@ -170,51 +242,6 @@ echo Microsoft Photos
 ::SetUserFTA.exe .heic AppX4mntx4h978m1v9gtzv0ewksfd6pmwsre
 ::SetUserFTA.exe .heif AppX4mntx4h978m1v9gtzv0ewksfd6pmwsre
 
-echo VLC Music
-SetUserFTA.exe .3gp VLC.3gp 
-SetUserFTA.exe .aa VLC.aa 
-SetUserFTA.exe .aac VLC.aac 
-SetUserFTA.exe .aax VLC.aax 
-SetUserFTA.exe .act VLC.act 
-SetUserFTA.exe .aiff VLC.aiff 
-SetUserFTA.exe .alac VLC.alac 
-SetUserFTA.exe .amr VLC.amr 
-SetUserFTA.exe .ape VLC.ape 
-SetUserFTA.exe .au VLC.au 
-SetUserFTA.exe .awb VLC.awb 
-SetUserFTA.exe .dss VLC.dss 
-SetUserFTA.exe .dvf VLC.dvf 
-SetUserFTA.exe .flac VLC.flac 
-SetUserFTA.exe .gsm VLC.gsm 
-SetUserFTA.exe .iklax VLC.iklax 
-SetUserFTA.exe .ivs VLC.ivs 
-SetUserFTA.exe .m4a VLC.m4a 
-SetUserFTA.exe .m4b VLC.m4b 
-SetUserFTA.exe .m4p VLC.m4p 
-SetUserFTA.exe .mmf VLC.mmf 
-SetUserFTA.exe .mp3 VLC.mp3 
-SetUserFTA.exe .mpc VLC.mpc 
-SetUserFTA.exe .msv VLC.msv 
-SetUserFTA.exe .nmf VLC.nmf 
-SetUserFTA.exe .ogg VLC.ogg 
-SetUserFTA.exe .oga VLC.oga d
-SetUserFTA.exe .mogg VLC.mogg 
-SetUserFTA.exe .opus VLC.opus 
-SetUserFTA.exe .ra VLC.ra 
-SetUserFTA.exe .rm VLC.rm 
-SetUserFTA.exe .raw VLC.raw 
-SetUserFTA.exe .rf64 VLC.rf64 
-SetUserFTA.exe .sln VLC.sln 
-SetUserFTA.exe .tta VLC.tta 
-SetUserFTA.exe .voc VLC.voc 
-SetUserFTA.exe .vox VLC.vox 
-SetUserFTA.exe .wav VLC.wav 
-SetUserFTA.exe .wma VLC.wma 
-SetUserFTA.exe .wv VLC.wv 
-SetUserFTA.exe .webm VLC.webm 
-SetUserFTA.exe .8svx VLC.8svx 
-SetUserFTA.exe .cda VLC.cda
-
 echo WinRAR
 SetUserFTA.exe .rar WinRAR
 SetUserFTA.exe .zip WinRAR
@@ -232,10 +259,29 @@ SetUserFTA.exe .z WinRAR
 SetUserFTA.exe .zipx WinRAR
 SetUserFTA.exe .zst WinRAR
 SetUserFTA.exe .001 WinRAR
+SetUserFTA.exe .tbz2 WinRAR
+SetUserFTA.exe .tgz WinRAR
+SetUserFTA.exe .txz WinRAR
+SetUserFTA.exe .tzst WinRAR
+
+echo Notepad
+SetUserFTA.exe .inf AppX4ztfk9wxr86nxmzzq47px0nh0e58b8fw
+SetUserFTA.exe .ini AppX4ztfk9wxr86nxmzzq47px0nh0e58b8fw
+SetUserFTA.exe .log AppX4ztfk9wxr86nxmzzq47px0nh0e58b8fw
+SetUserFTA.exe .ps1 AppX4ztfk9wxr86nxmzzq47px0nh0e58b8fw
+SetUserFTA.exe .psd1 AppX4ztfk9wxr86nxmzzq47px0nh0e58b8fw
+SetUserFTA.exe .psm1 AppX4ztfk9wxr86nxmzzq47px0nh0e58b8fw
+SetUserFTA.exe .scp AppX4ztfk9wxr86nxmzzq47px0nh0e58b8fw
+SetUserFTA.exe .txt AppX4ztfk9wxr86nxmzzq47px0nh0e58b8fw
+SetUserFTA.exe .wtx AppX4ztfk9wxr86nxmzzq47px0nh0e58b8fw
 
 echo Adobe Acrobat
 SetUserFTA.exe .pdf Acrobat.Document.DC
 
+echo Thunderbird
+SetUserFTA.exe mailto Thunderbird.Url.mailto
+SetUserFTA.exe .eml ThunderbirdEML
+SetUserFTA.exe .wdseml ThunderbirdEML
 
 echo Firefox
 SetUserFTA.exe .htm FirefoxHTML-308046B0AF4A39CB
