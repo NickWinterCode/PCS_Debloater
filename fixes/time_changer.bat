@@ -23,6 +23,7 @@ reg add "HKEY_CURRENT_USER\Control Panel\International" /v iCalendarType /t REG_
 
 REM Turn ON Set time automatically
 echo --- Set NTP (time) server to `pool.ntp.org`
+sc config w32time start=demand
 :: Configure time source
 w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
 :: Stop time service if running

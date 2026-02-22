@@ -6,7 +6,7 @@
 	"Status" : 
 	{
 		"foundDevices" : 0,
-		"lastDeviceScan" : 5,
+		"lastDeviceScan" : 0,
 		"lastRevert" : 0,
 		"lastScan" : 0,
 		"lastUpdate" : 0,
@@ -17,18 +17,18 @@
 	},
 	"computerInfo" : 
 	{
-		"baseboard_manufacturer" : "ASUSTeK COMPUTER INC.",
-		"baseboard_product" : "FX506LH",
-		"baseboard_version" : "1.0",
-		"bios_manufacturer" : "American Megatrends Inc.",
-		"bios_name" : "FX506LH.310",
-		"bios_smbios_version" : "FX506LH.310",
-		"bios_version" : "_ASUS_ - 1072009",
-		"model" : "ASUS TUF Gaming F15 FX506LH_FX506LH",
-		"system_family" : "ASUS TUF Gaming F15",
-		"system_sku" : " ",
+		"baseboard_manufacturer" : "MEDION",
+		"baseboard_product" : "M17T",
+		"baseboard_version" : "Default string",
+		"bios_manufacturer" : "American Megatrends International, LLC.",
+		"bios_name" : "212",
+		"bios_smbios_version" : "212",
+		"bios_version" : "MEDION - 1072009",
+		"model" : "S17405",
+		"system_family" : "Akoya",
+		"system_sku" : "ML-230009 30031730",
 		"type" : "laptop",
-		"vendor" : "ASUSTeK COMPUTER INC."
+		"vendor" : "MEDION"
 	},
 	"hasProblemList" : []
 }

@@ -112,11 +112,11 @@ function Get-SystemInfo {
 # --- SCRIPT EXECUTION AND OUTPUT HANDLING ---
 
 # The rest of the script is unchanged and correct.
-$computerName = $env:COMPUTERNAME
-$desktopPath  = [System.Environment]::GetFolderPath('Desktop')
-$outputFolder = Join-Path -Path $desktopPath -ChildPath $computerName
-$timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
-$outputFile = Join-Path -Path $outputFolder -ChildPath "SystemInfo-$($computerName)-$($timestamp).txt"
-New-Item -Path $outputFolder -ItemType Directory -Force | Out-Null
-Get-SystemInfo | Format-List | Out-File -FilePath $outputFile
-Write-Host "System information has been saved to: $outputFile"
+#$computerName = $env:COMPUTERNAME
+#$desktopPath  = [System.Environment]::GetFolderPath('Desktop')
+#$outputFolder = Join-Path -Path $desktopPath -ChildPath $computerName
+#$timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+#$outputFile = Join-Path -Path $outputFolder -ChildPath "SystemInfo-$($computerName)-$($timestamp).txt"
+#New-Item -Path $outputFolder -ItemType Directory -Force | Out-Null
+Get-SystemInfo | Format-List #| Out-File -FilePath $outputFile
+#Write-Host "System information has been saved to: $outputFile"

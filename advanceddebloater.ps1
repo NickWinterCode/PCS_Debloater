@@ -1,11 +1,4 @@
 # original from: https://freetimetech.com/windows-11-debloater-tool-debloat-gui/
-$scriptName = [System.IO.Path]::GetFileName($PSCommandPath)
-$timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
-$logFolder = Join-Path $env:USERPROFILE "Desktop\$env:COMPUTERNAME"
-if (!(Test-Path $logFolder)) { New-Item -Path $logFolder -ItemType Directory | Out-Null }
-$logFile = Join-Path $logFolder ("$scriptName-$timestamp.txt")
-
-Start-Transcript -Path $logFile -Force
 Write-Output "Running Essential Tweaks..."
 
 Write-Output "Disabling Telemetry..."
@@ -300,7 +293,7 @@ If (!(Test-Path "HKU:")) {
 Set-ItemProperty -Path "HKU:\.DEFAULT\Control Panel\Keyboard" -Name "InitialKeyboardIndicators" -Type DWord -Value 2
 
 Write-Output "Showing known file extensions..."
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "HideFileExt" -Type DWord -Value 0
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "HideFileExt" -Type DWord -Value 1
 
 Write-Output "Adjusting visual effects for performance..."
 Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "DragFullWindows" -Type String -Value 0

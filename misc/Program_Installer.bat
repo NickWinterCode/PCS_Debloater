@@ -1,41 +1,27 @@
-:: RUNTIMES
-winget install Microsoft.VCRedist.2015+.x86
+echo installing Mozilla Firefox
+winget install Mozilla.Firefox.de
+
+echo installing Mozilla Thunderbird
+winget install Mozilla.Thunderbird.de
+
+echo installing Microsoft Visual C++ Redistributable 2015+
 winget install Microsoft.VCRedist.2015+.x64
-winget install Microsoft.DotNet.DesktopRuntime.5
-winget install Microsoft.DotNet.DesktopRuntime.6
-winget install Microsoft.DotNet.DesktopRuntime.7
-winget install Microsoft.DotNet.DesktopRuntime.8
-winget install Microsoft.DotNet.DesktopRuntime.9
-::winget install Microsoft.DotNet.SDK.8
 
-:: TOOLS
-winget install 7zip.7zip
+echo installing Microsoft Visual C++ Redistributable 2015+
+winget install Microsoft.VCRedist.2015+.x86
+
+echo installing VideoLAN VLC
+winget install VideoLAN.VLC
+
+echo installing WinRAR
 winget install RARLab.WinRAR
-winget install Skillbrains.Lightshot
-winget install voidtools.Everything
-winget install CrystalRich.LockHunter
-winget install WinsiderSS.SystemInformer
-winget install jurplel.qView
-winget install TechPowerUp.NVCleanstall
-winget install Tonec.InternetDownloadManager
 
-:: AUDIO
-winget install Audacity.Audacity
-winget install Gyan.FFmpeg
-winget install OBSProject.OBSStudio
-winget install File-New-Project.EarTrumpet
+echo installing The Document Foundation LibreOffice
+winget install TheDocumentFoundation.LibreOffice
 
-:: BROWSER
-winget install brave.brave
-winget install Alex313031.Thorium.AVX2
+echo installing Adobe Acrobat Reader DC
+:: https://ardownload2.adobe.com/pub/adobe/acrobat/win/AcrobatDC/2500120577/AcroRdrDCx642500120577_MUI.exe
+winget install Adobe.Acrobat.Reader.64-bit
 
-:: MISC
-winget install BlenderFoundation.Blender
-winget install Valve.Steam
-winget install Discord.Discord
-winget install zufuliu.notepad4.AVX2
-winget install Torchsoft.RegistryWorkshop
-winget install StartIsBack.StartAllBack
-winget install MartiCliment.UniGetUI
-winget install idrassi.HashCheckShellExtension
-winget install VoodooSoft.DefenderUI
+timeout /t 1 /nobreak
+exit

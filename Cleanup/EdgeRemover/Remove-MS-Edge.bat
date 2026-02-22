@@ -1,14 +1,5 @@
 :: original script by ShadowWhisperer https://github.com/ShadowWhisperer/Remove-MS-Edge
 @echo on
-::for /f "delims=" %%i in ('powershell -Command "(Get-Date).ToString('yyyy-MM-dd_HH-mm-ss')"') do set datetime=%%i
-::set "logFolder=%userprofile%\Desktop\%COMPUTERNAME%"
-::if not exist "%logFolder%" mkdir "%logFolder%"
-::set "scriptName=%~nx0"
-::set "log=%logFolder%\%scriptName%_%datetime%.txt"
-
-::call :log > %log% 2>&1
-
-:log
 title Edge Remover
 REM
 REM Download setup.exe from Repo

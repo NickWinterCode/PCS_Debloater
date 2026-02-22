@@ -1,11 +1,3 @@
-$scriptName = [System.IO.Path]::GetFileName($PSCommandPath)
-$timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
-$logFolder = Join-Path $env:USERPROFILE "Desktop\$env:COMPUTERNAME"
-if (!(Test-Path $logFolder)) { New-Item -Path $logFolder -ItemType Directory | Out-Null }
-$logFile = Join-Path $logFolder ("$scriptName-$timestamp.txt")
-
-Start-Transcript -Path $logFile -Force
-
 $GermanLangTag = 'de-DE'    # German language
 $GermanLayoutID = '0407:00000407'  # German keyboard
 
