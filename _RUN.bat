@@ -9,8 +9,9 @@ if %errorlevel% neq 0 (
 :: DO NOT DELTE, IMPORTANT FOR SCRIPT FINDING
 cd %~dp0
 
-:: Copy Wallpaper to Systems Location
+:: Copy Wallpaper to Systems Location and RemoteControl to Users Desktop
 copy "PC-Spezialist_BG.jpg" "C:\Windows\Web\4K\Wallpaper\Windows\PC-Spezialist_BG.jpg"
+copy "PCSpezialist Fernwartung.exe" "%userprofile%\Desktop\PCSpezialist Fernwartung.exe"
 
 :: Run Tweaks
 powershell -ExecutionPolicy Bypass -File .\CreateRestorePoint.ps1
