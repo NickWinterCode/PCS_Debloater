@@ -12,8 +12,8 @@ $ErrorActionPreference = "SilentlyContinue"
 ########
 # PREP #
 ########
-$METRO_MICROSOFT_MODERN_APPS_TO_TARGET_BY_NAME_SCRIPT_VERSION = "1.3.9"
-$METRO_MICROSOFT_MODERN_APPS_TO_TARGET_BY_NAME_SCRIPT_DATE = "2023-09-05"
+#$METRO_MICROSOFT_MODERN_APPS_TO_TARGET_BY_NAME_SCRIPT_VERSION = "1.3.9"
+#$METRO_MICROSOFT_MODERN_APPS_TO_TARGET_BY_NAME_SCRIPT_DATE = "2023-09-05"
 
 # Needed for Removal
 $AppxPackages = Get-AppxProvisionedPackage -online | select-object PackageName,Displayname
@@ -128,32 +128,32 @@ Remove-App "Windows.ContactSupport"
 
 # Inactive identifers
 #Remove-App "Microsoft.Appconnector"                   # Not sure about this one
-#Remove-App "Microsoft.BingWeather"                    # Weather app
-#Remove-App "Microsoft.CommsPhone"                     # Phone app
-#Remove-App "Microsoft.MSPaint"                        # MS Paint (Paint 3D)
-#Remove-App "Microsoft.Microsoft3DViewer"              # 3D model viewer
-#Remove-App "Microsoft.MicrosoftSolitaireCollection"   # Solitaire collection
-#Remove-App "Microsoft.MicrosoftStickyNotes"           # Pulled from active list due to user requests
-#Remove-App "Microsoft.Office.OneNote"                 # Onenote app
+Remove-App "Microsoft.BingWeather"                    # Weather app
+Remove-App "Microsoft.CommsPhone"                     # Phone app
+Remove-App "Microsoft.MSPaint"                        # MS Paint (Paint 3D)
+Remove-App "Microsoft.Microsoft3DViewer"              # 3D model viewer
+Remove-App "Microsoft.MicrosoftSolitaireCollection"   # Solitaire collection
+Remove-App "Microsoft.MicrosoftStickyNotes"           # Pulled from active list due to user requests
+Remove-App "Microsoft.Office.OneNote"                 # Onenote app
 #Remove-App "Microsoft.Windows.Photos"                 # Photos app
 #Remove-App "Microsoft.WindowsAlarms"                  # Alarms and Clock app
 #Remove-App "Microsoft.WindowsCalculator"              # Calculator app
 #Remove-App "Microsoft.WindowsCamera"                  # Camera app
-#Remove-App "Microsoft.WindowsMaps"                    # Maps app
-#Remove-App "Microsoft.WindowsSoundRecorder"           # Sound Recorder app
+Remove-App "Microsoft.WindowsMaps"                    # Maps app
+Remove-App "Microsoft.WindowsSoundRecorder"           # Sound Recorder app
 #Remove-App "Microsoft.WindowsStore"                   # Windows Store
-#Remove-App "Microsoft.Xbox*"
-#Remove-App "Microsoft.Xbox.TCUI"
-#Remove-App "Microsoft.XboxApp"
-#Remove-App "Microsoft.XboxGameCallableUI"
+Remove-App "Microsoft.Xbox*"
+Remove-App "Microsoft.Xbox.TCUI"
+Remove-App "Microsoft.XboxApp"
+Remove-App "Microsoft.XboxGameCallableUI"
 #Remove-App "Microsoft.XboxGameOverlay"
 #Remove-App "Microsoft.XboxGamingOverlay"
-#Remove-App "Microsoft.XboxIdentityProvider"
-#Remove-App "Microsoft.XboxSpeechToTextOverlay"
-#Remove-App "Microsoft.Zune"                           # Zune collection of apps
-#Remove-App "Microsoft.ZuneMusic"
-#Remove-App "Microsoft.ZuneVideo"
-#Remove-App "Microsoft.windowscommunicationsapps"      # Calendar and Mail app
+Remove-App "Microsoft.XboxIdentityProvider"
+Remove-App "Microsoft.XboxSpeechToTextOverlay"
+Remove-App "Microsoft.Zune"                           # Zune collection of apps
+Remove-App "Microsoft.ZuneMusic"
+Remove-App "Microsoft.ZuneVideo"
+Remove-App "Microsoft.windowscommunicationsapps"      # Calendar and Mail app
 
 ##########
 # Finish #

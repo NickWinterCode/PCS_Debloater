@@ -9,7 +9,6 @@ call :log > %log% 2>&1
 :log
 :: BatchGotAdmin
 
-mode 28, 7
 pushd %SystemDrive%
 echo.
 echo  Starting temp file cleanup

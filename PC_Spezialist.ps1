@@ -1,30 +1,45 @@
-﻿# original from: https://github.com/memstechtips/UnattendedWinstall/blob/main/UWScript.ps1
+# original from: https://github.com/memstechtips/UnattendedWinstall/blob/main/UWScript.ps1
 $scriptName = [System.IO.Path]::GetFileName($PSCommandPath)
 $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
 $logFolder = Join-Path $env:USERPROFILE "Desktop\$env:COMPUTERNAME"
-if (!(Test-Path $logFolder)) { New-Item -Path $logFolder -ItemType Directory | Out-Null }
+if (!(Test-Path $logFolder)) { New-Item -Path $logFolder -ItemType Directory   }
 $logFile = Join-Path $logFolder ("$scriptName-$timestamp.log")
 
 Start-Transcript -Path $logFile -Force
 $tweaks = @(
    "RequireAdmin", 
    #"CreateRestorePoint",
+   "Test-InternetConnection",
    "Test-WinGetStatus",  
-   #"Install-WinGetDependencies",
-   #"Install-WinGet",
    "Set-AppsRegistry", 
    "Uninstall-OneDrive", 
    "Remove-OneDrive", 
    "Disable-Recall", 
    "Remove-Apps", 
-   "Set-RecommendedPrivacySettings",    
+   "MinimalProcesses",
+
+   #"Set-DefaultPrivacySettings",
+   "Set-RecommendedPrivacySettings",
+
+   #"Set-DefaultUpdateSettings",
    "Set-RecommendedUpdateSettings",
+
+   #"Set-DefaultHKLMRegistry",
    "Set-RecommendedHKLMRegistry", 
+
+   #"Set-DefaultHKCURegistry",
    "Set-RecommendedHKCURegistry", 
+
+   #"Set-DefaultServices",
    "Set-ServiceStartup", 
+
+   #"Enable-ScheduledTasks",
    "Disable-ScheduledTasks", 
+
+   #"Set-DefaultPowerSettings",
    "Set-RecommendedPowerSettings",
-   "Set-RecommendedUserRegistry"
+
+   "Set-UserCustomization"
 )
 
 
@@ -33,7 +48,6 @@ $Host.UI.RawUI.WindowTitle = $myInvocation.MyCommand.Definition + " (Administrat
 $Host.UI.RawUI.BackgroundColor = "Black"
 $Host.PrivateData.ProgressBackgroundColor = "Black"
 $Host.PrivateData.ProgressForegroundColor = "White"
-Clear-Host
 
 # Center the PowerShell window
 $psWindow = Get-Process -Id $pid | ForEach-Object { $_.MainWindowHandle }
@@ -80,212 +94,6 @@ public class WindowCentering {
 # START OF MENU FUNCTIONS
 $script:loop = $true
 
-# Header
-function Show-Header {
-    Clear-Host
-    Write-Host "============================================" -ForegroundColor Cyan
-    Write-Host "                  UWScript                  " -ForegroundColor Yellow
-    Write-Host "============================================" -ForegroundColor Cyan
-    Write-Host "" 
-    Write-Host "NO LIABILITY ACCEPTED, PROCEED WITH CAUTION!" -ForegroundColor Black -BackgroundColor Red
-    Write-Host ""
-}
-
-# Main Menu
-function Show-MainMenu {
-    # Show-Header
-    Write-Host "Main Menu:" -ForegroundColor Yellow
-    Write-Host "1. Software & Apps"
-    Write-Host "2. Privacy & Security"
-    Write-Host "3. Windows Updates"
-    Write-Host "4. Optimize Registry"
-    Write-Host "5. Tasks & Services"
-    Write-Host "6. Power Settings"
-    Write-Host "0. Exit"
-    
-    $choice = Read-Host "Select an option (0-6)"
-
-    switch ($choice) {
-        "1" { Show-SoftwareMenu }      # Call the Software & Apps menu
-        "2" { Show-PrivacySecurityMenu } # Call the Privacy & Security menu
-        "3" { Show-WindowsUpdateMenu }  # Call the Windows Updates menu
-        "4" { Show-OptimizeRegistryMenu } # Call the Optimize Registry menu
-        "5" { Show-TasksServicesMenu } # Call the Tasks & Services menu
-        "6" { Show-PowerSettingsMenu } # Call the Power Settings menu
-        "0" { $script:loop = $false }  # Exit
-        default {
-            Write-Host "Invalid selection. Please try again." -ForegroundColor Red
-            Start-Sleep -Seconds 1
-        }
-    }
-}
-
-# Reusable Menu Function
-function Show-Menu {
-    param (
-        [string]$menuTitle,
-        [string[]]$options,
-        [hashtable]$actions,
-        [string]$instructions = "Select an option",
-        [switch]$showHeader
-    )
-
-    # Display the header if specified
-    if ($showHeader) {
-        # Show-Header
-    }
-
-    # Display the menu title
-    Write-Host "$menuTitle" -ForegroundColor Yellow
-
-    # Display the "Back" option as "0"
-    Write-Host "0. Main Menu" -ForegroundColor Cyan
-
-    # Display the options starting from 1
-    for ($i = 0; $i -lt $options.Length; $i++) {
-        Write-Host "$($i + 1). $($options[$i])"
-    }
-
-    Write-Host ""
-    $choice = Read-Host "$instructions"
-
-    if ($choice -eq "0") {
-        return # Return to the previous menu or exit current menu
-    }
-    elseif ($actions.ContainsKey($choice)) {
-        # Execute the corresponding action
-        & $actions[$choice]
-    }
-    else {
-        Write-Host "Invalid choice. Try again." -ForegroundColor Red
-        Start-Sleep -Seconds 1
-        Show-Menu -menuTitle $menuTitle -options $options -actions $actions -showHeader:$showHeader
-    }
-}
-
-
-# 1. Software & Apps Menu
-function Show-SoftwareMenu {
-    Show-Menu -menuTitle "Software & Apps" `
-        -options @("Install Software", "Remove Bloatware Apps") `
-        -actions @{
-        "1" = { Show-AppInstallMenu }
-        "2" = { Show-AppRemovalMenu }
-    } `
-        -showHeader
-}
-
-# Install Software Menu
-function Show-AppInstallMenu {
-    Show-Menu -menuTitle "Select an app to install" `
-        -options @("Microsoft Store", "Browser Menu", "UniGetUI (Software Manager)") `
-        -actions @{
-        "1" = { Install-Store }
-        "2" = { Show-BrowserInstallMenu }
-        "3" = { Install-AppWithWinGet -AppName "MartiCliment.UniGetUI" -FriendlyName "UniGetUI (Software Manager)" }
-    } `
-        -showHeader
-}
-function Show-BrowserInstallMenu {
-    Show-Menu -menuTitle "Select a Browser to install" `
-        -options @("Thorium Browser", "Mozilla Firefox", "Microsoft Edge", "Google Chrome", "Brave Browser") `
-        -actions @{
-        "1" = { Install-AppWithWinGet -AppName "Alex313031.Thorium" -FriendlyName "Thorium Browser" } 
-        "2" = { Install-AppWithWinGet -AppName "Mozilla.Firefox" -FriendlyName "Mozilla Firefox" }
-        "3" = { Install-AppWithWinGet -AppName "Microsoft.Edge" -FriendlyName "Microsoft Edge" }
-        "4" = { Install-AppWithWinGet -AppName "Google.Chrome" -FriendlyName "Google Chrome" }
-        "5" = { Install-AppWithWinGet -AppName "Brave.Brave" -FriendlyName "Brave Browser" }  
-    } `
-        -showHeader
-}
-
-# Remove Bloatware Apps Menu
-function Show-AppRemovalMenu {
-    Show-Menu -menuTitle "Remove Windows Bloatware Apps" `
-        -options @("Remove ALL Windows Apps") `
-        -actions @{
-        "1" = { Remove-Apps }
-    } `
-        -showHeader
-}
-
-# 2. Privacy & Security Menu
-function Show-PrivacySecurityMenu {
-    Show-Menu -menuTitle "Privacy & Security" `
-        -options @("Check Windows Defender Status", "Check User Account Control Status", "Apply Recommended Privacy Settings", "Apply Windows Default Privacy Settings") `
-        -actions @{
-        "1" = { Get-WindowsDefenderStatus }
-        "2" = { Get-UACStatus }
-        "3" = { Set-RecommendedPrivacySettings }
-        "4" = { Set-DefaultPrivacySettings }
-    } `
-        -showHeader
-}
-
-# 3. Windows Updates Menu
-function Show-WindowsUpdateMenu {
-    Show-Menu -menuTitle "Windows Update Settings" `
-        -options @("Set Recommended Update Settings", "Set Default Update Settings") `
-        -actions @{
-        "1" = { Set-RecommendedUpdateSettings }
-        "2" = { Set-DefaultUpdateSettings }
-    } `
-        -showHeader
-}
-
-# 4. Optimize Registry Menu
-function Show-OptimizeRegistryMenu {
-    Show-Menu -menuTitle "Optimize Windows Registry" `
-        -options @("Set Recommended Registry Settings", "Set Default Registry Settings") `
-        -actions @{
-        "1" = { Set-RecommendedHKLMRegistry; Set-RecommendedHKCURegistry }
-        "2" = { Set-DefaultHKLMRegistry; Set-DefaultHKCURegistry }
-    } `
-        -showHeader
-}
-
-# 5. Tasks & Services Menu
-function Show-TasksServicesMenu {
-    Show-Menu -menuTitle "Windows Services & Scheduled Tasks" `
-        -options @("Minimal Services", "Default Services", "Disable Scheduled Tasks", "Enable Scheduled Tasks") `
-        -actions @{
-        "1" = { Set-ServiceStartup }
-        "2" = { Set-DefaultServices }
-        "3" = { Disable-ScheduledTasks }
-        "4" = { Enable-ScheduledTasks }
-    } `
-        -showHeader
-}
-
-# 6. Power Settings Menu
-function Show-PowerSettingsMenu {
-    Show-Menu -menuTitle "Power Settings" `
-        -options @("Recommended Power Settings", "Default Power Settings") `
-        -actions @{
-        "1" = { Set-RecommendedPowerSettings }
-        "2" = { Set-DefaultPowerSettings }
-    } `
-        -showHeader
-}
-
-# END OF MENU FUNCTIONS
-
-# Define Unattended Windows Installation Variables & Functions
-# Check if the marker file exists to determine if we are in the specialize phase
-$markerFilePath = "C:\specialize_marker.txt"
-$isSpecializePhase = Test-Path $markerFilePath
-# Function to Pause scripts only when not in Specialize Phase
-function Wait-IfNotSpecialize {
-    if (-not $isSpecializePhase) {
-        Pause
-    }
-}
-
-# START OF COMMAND & OPERATION FUNCTIONS
-# Start of Software & Apps Functions
-# Install Software Functions
-
-# Check for internet connection
 function Test-InternetConnection {
     Try {
         $connection = Test-Connection -ComputerName www.microsoft.com -Count 1 -ErrorAction Stop
@@ -298,38 +106,11 @@ function Test-InternetConnection {
     }
 }
 
-# Install the Microsoft Store
-function Install-Store {
-    Clear-Host
-    # Check for internet connection
-    if (-not (Test-InternetConnection)) {
-        Write-Host "No internet connection detected. Please connect to the internet and try again." -BackgroundColor Red
-        # Wait-IfNotSpecialize
-        return
-    }
-
-    # If internet connection is available, continue with installation
-    # Show-Header
-    Write-Host "Installing Microsoft Store . . ."
-    Try {
-        wsreset -i -ErrorAction SilentlyContinue
-        # Show-Header
-        Write-Host "Microsoft Store is being installed silently in the background." -BackgroundColor Green
-        Write-Host "Please allow a few minutes for it to install and use it to reinstall the necessary apps manually."
-    }
-    Catch {
-        # Show-Header
-        Write-Host "An error occurred while trying to install the Microsoft Store. Please try again later." -BackgroundColor Red
-    }
-    # Wait-IfNotSpecialize
-}
-
-# Function to check if WinGet is installed, install if necessary, and check for updates
 function Test-WinGetStatus {
     # Helper function to check if WinGet is installed
     function Test-WinGetInstalled {
         Try {
-            winget --version | Out-Null
+            winget --version  
             return $true
         }
         Catch {
@@ -339,7 +120,6 @@ function Test-WinGetStatus {
 
     # Helper function to install required dependencies from GitHub
     function Install-WinGetDependencies {
-        # Show-Header
         Write-Host "Installing required dependencies, please wait . . ." -ForegroundColor Yellow
 
         # Define the URLs and paths for dependencies
@@ -351,21 +131,17 @@ function Test-WinGetStatus {
         # Download and install each dependency
         foreach ($dependency in $dependencyUrls) {
             Try {
-                Start-BitsTransfer -Source $dependency.Url -Destination $dependency.Path -TransferType Download -ErrorAction Stop | Out-Null
-                # Show-Header
+                Start-BitsTransfer -Source $dependency.Url -Destination $dependency.Path -TransferType Download -ErrorAction Stop  
                 Try {
                     Add-AppxPackage -Path $dependency.Path
-                    # Show-Header
                 }
                 Catch {
                     Write-Host "Failed to install $($dependency.Path). Please install it manually from the URL: $($dependency.Url)" -ForegroundColor Red
-                    # Wait-IfNotSpecialize
                     Exit
                 }
             }
             Catch {
                 Write-Host "Failed to download $($dependency.Path). Check your internet connection and try again." -ForegroundColor Red
-                # Wait-IfNotSpecialize
                 Exit
             }
         }
@@ -373,19 +149,15 @@ function Test-WinGetStatus {
 
     # Function to install WinGet from GitHub if not found
     function Install-WinGet {
-        # Show-Header
         Write-Host "WinGet is not installed. Downloading the latest version from GitHub..." -ForegroundColor Yellow
 
         # Ensure internet connection is active
         if (-not (Test-InternetConnection)) {
-            # Show-Header
             Write-Host "No internet connection detected. Please connect to the internet and try again." -ForegroundColor Red
-            # Wait-IfNotSpecialize
             Exit
         }
 
         # Install the required dependencies
-        # Show-Header
         Install-WinGetDependencies
 
         # Define GitHub URL for WinGet releases
@@ -393,39 +165,30 @@ function Test-WinGetStatus {
         $wingetInstallerPath = "$env:TEMP\WinGetInstaller.msixbundle"
 
         Try {
-            # Show-Header
             Write-Host "Starting download of WinGet installer using BITS..."
 
-            Start-BitsTransfer -Source $wingetDownloadUrl -Destination $wingetInstallerPath -TransferType Download -ErrorAction Stop | Out-Null
+            Start-BitsTransfer -Source $wingetDownloadUrl -Destination $wingetInstallerPath -TransferType Download -ErrorAction Stop  
 
             # Confirm the file was downloaded successfully
             if (-not (Test-Path $wingetInstallerPath) -or (Get-Item $wingetInstallerPath).Length -eq 0) {
-                # Show-Header
                 Write-Host "The download failed or the file is empty. Please try downloading manually from: $wingetDownloadUrl" -ForegroundColor Red
-                # Wait-IfNotSpecialize
                 Exit
             }
 
-            # Show-Header
             Write-Host "WinGet installer downloaded successfully."
 
             # Install the downloaded WinGet installer
             Try {
                 Add-AppxPackage -Path $wingetInstallerPath
-                # Show-Header
                 Write-Host "WinGet installed successfully." -ForegroundColor Green
             }
             Catch {
-                # Show-Header
                 Write-Host "Failed to install WinGet. Please install it manually from the GitHub page: https://github.com/microsoft/winget-cli/releases" -ForegroundColor Red
-                # Wait-IfNotSpecialize
                 Exit
             }
         }
         Catch {
-            # Show-Header
             Write-Host "Failed to download the WinGet installer. Check your internet connection and try again." -ForegroundColor Red
-            # Wait-IfNotSpecialize
             Exit
         }
     }
@@ -436,124 +199,102 @@ function Test-WinGetStatus {
     }
 
     # Once installed, check for updates
-    # Show-Header
     Write-Host "Checking for WinGet updates..."
     Try {
         $updateCheck = winget upgrade --id Microsoft.WinGet -e --accept-package-agreements --accept-source-agreements 2>&1
         if ($updateCheck -match "No installed package found" -or $updateCheck -match "No applicable upgrade found") {
-            # Show-Header
             Write-Host "WinGet is already up-to-date." -ForegroundColor Green
         }
         elseif ($updateCheck -match "An applicable upgrade is available") {
-            # Perform the upgrade if available
-            # Show-Header
             Write-Host "An update is available for WinGet. Upgrading now..."
             Try {
-                winget upgrade --id Microsoft.WinGet -e --accept-package-agreements --accept-source-agreements | Out-Null
+                winget upgrade --id Microsoft.WinGet -e --accept-package-agreements --accept-source-agreements  
                 if ($LASTEXITCODE -eq 0) {
-                    # Show-Header
                     Write-Host "WinGet updated successfully." -ForegroundColor Green
                 }
                 else {
-                    # Show-Header
                     Write-Host "Failed to update WinGet. Proceeding with app installation..." -ForegroundColor Yellow
                 }
             }
             Catch {
-                # Show-Header
                 Write-Host "An error occurred while upgrading WinGet. Proceeding with app installation..." -ForegroundColor Yellow
             }
         }
         else {
-            # Show-Header
             Write-Host "Could not determine WinGet update status. Proceeding with app installation..." -ForegroundColor Yellow
         }
     }
     Catch {
-        # Show-Header
         Write-Host "An error occurred while checking for WinGet updates. Proceeding with app installation..." -ForegroundColor Yellow
     }
 }
 
-# Function to install an app using WinGet
-function Install-AppWithWinGet {
-    param (
-        [string]$AppName,
-        [string]$FriendlyName
-    )
-
-    # Show-Header
-
-    # Check for internet connection
-    if (-not (Test-InternetConnection)) {
-        # Show-Header
-        Write-Host "No internet connection detected. Please connect to the internet and try again." -BackgroundColor Red
-        # Wait-IfNotSpecialize
-        return
-    }
-
-    # Update WinGet to ensure it's the latest version
-    # Show-Header
-    Test-WinGetStatus
-
-    # Continue with app installation
-    # Show-Header
-    Write-Host "Installing $FriendlyName using WinGet . . ."
-    Try {
-        # Attempt to install or upgrade the app using WinGet
-        $installOutput = winget install --id $AppName -e --silent --accept-package-agreements --accept-source-agreements 2>&1
-
-        if ($installOutput -match "Found an existing package already installed" -and $installOutput -match "No available upgrade found") {
-            Write-Host "$FriendlyName is already installed and up-to-date." -BackgroundColor Green
-        }
-        elseif ($installOutput -match "Successfully installed") {
-            # Show-Header
-            Write-Host "$FriendlyName installation completed successfully." -BackgroundColor Green
-        }
-        elseif ($installOutput -match "No package found") {
-            # Show-Header
-            Write-Host "Failed to install $FriendlyName using ID '$AppName'. Package not found or check your internet connection." -BackgroundColor Red
-        }
-        else {
-            # Show-Header
-            Write-Host "An issue occurred during the installation of $FriendlyName. Please check the app ID or try again later." -BackgroundColor Red
-        }
-    }
-    Catch {
-        # Show-Header
-        Write-Host "An unexpected error occurred while installing $FriendlyName." -BackgroundColor Red
-    }
-    # Wait-IfNotSpecialize
+Function MinimalProcesses {
+    $host.ui.RawUI.WindowTitle = 'GamerOS Optimizer'
+    $ram = (Get-CimInstance -ClassName Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum).Sum / 1kb
+    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control" -Name "SvcHostSplitThresholdInKB" -Type DWord -Value $ram -Force
 }
 
-# Remove Bloatware Apps Functions
-# Define Packages
 $appxPackages = @(
-    'Microsoft.Microsoft3DViewer', 'Microsoft.BingSearch', 'Clipchamp.Clipchamp',
-    'Microsoft.WindowsAlarms', 'Microsoft.549981C3F5F10', 'Microsoft.Windows.DevHome',
-    'MicrosoftCorporationII.MicrosoftFamily', 'Microsoft.WindowsFeedbackHub', 'Microsoft.GetHelp',
-    'microsoft.windowscommunicationsapps', 'Microsoft.WindowsMaps', 'Microsoft.ZuneVideo',
-    'Microsoft.BingNews', 'Microsoft.MicrosoftOfficeHub', 'Microsoft.Office.OneNote',
-    'Microsoft.OutlookForWindows', 'Microsoft.People', 
-    'Microsoft.PowerAutomateDesktop', 'MicrosoftCorporationII.QuickAssist', 'Microsoft.SkypeApp',
-    'Microsoft.MicrosoftSolitaireCollection', 'Microsoft.MicrosoftStickyNotes', 'MSTeams',
-    'Microsoft.Getstarted', 'Microsoft.Todos', 'Microsoft.WindowsSoundRecorder', 'Microsoft.BingWeather',
-    'Microsoft.ZuneMusic', 'Microsoft.WindowsTerminal', 'Microsoft.Xbox.TCUI', 'Microsoft.XboxApp',
-    'Microsoft.XboxGameOverlay', 'Microsoft.XboxGamingOverlay', 'Microsoft.XboxIdentityProvider',
-    'Microsoft.XboxSpeechToTextOverlay', 'Microsoft.GamingApp', 'Microsoft.YourPhone', 'Microsoft.OneDrive',
-    'Microsoft.549981C3F5F10', 'Microsoft.MixedReality.Portal', 'Microsoft.ScreenSketch'
-    'Microsoft.Windows.Ai.Copilot.Provider', 'Microsoft.Copilot', 'Microsoft.Copilot_8wekyb3d8bbwe',
-    'Microsoft.WindowsMeetNow', 'Microsoft.MSPaint'
+    'Microsoft.Microsoft3DViewer', 
+    'Microsoft.BingSearch', 
+    'Clipchamp.Clipchamp',
+    'Microsoft.WindowsAlarms', 
+    'Microsoft.549981C3F5F10', 
+    'Microsoft.Windows.DevHome',
+    'MicrosoftCorporationII.MicrosoftFamily', 
+    'Microsoft.WindowsFeedbackHub', 
+    'Microsoft.GetHelp',
+    'microsoft.windowscommunicationsapps', 
+    'Microsoft.WindowsMaps', 
+    'Microsoft.ZuneVideo',
+    'Microsoft.BingNews', 
+    'Microsoft.MicrosoftOfficeHub', 
+    'Microsoft.Office.OneNote',
+    'Microsoft.OutlookForWindows', 
+    'Microsoft.People', 
+    'Microsoft.PowerAutomateDesktop', 
+    'MicrosoftCorporationII.QuickAssist', 
+    'Microsoft.SkypeApp',
+    'Microsoft.MicrosoftSolitaireCollection', 
+    'Microsoft.MicrosoftStickyNotes', 
+    'MSTeams',
+    'Microsoft.Getstarted', 
+    'Microsoft.Todos', 
+    'Microsoft.WindowsSoundRecorder', 
+    'Microsoft.BingWeather',
+    'Microsoft.ZuneMusic', 
+    'Microsoft.WindowsTerminal', 
+    'Microsoft.Xbox.TCUI', 
+    'Microsoft.XboxApp',
+    'Microsoft.XboxGameOverlay', 
+    'Microsoft.XboxGamingOverlay', 
+    'Microsoft.XboxIdentityProvider',
+    'Microsoft.XboxSpeechToTextOverlay', 
+    'Microsoft.GamingApp', 
+    'Microsoft.YourPhone', 
+    'Microsoft.OneDrive',
+    'Microsoft.549981C3F5F10', 
+    'Microsoft.MixedReality.Portal', 
+    'Microsoft.ScreenSketch'
+    'Microsoft.Windows.Ai.Copilot.Provider', 
+    'Microsoft.Copilot', 
+    'Microsoft.Copilot_8wekyb3d8bbwe',
+    'Microsoft.WindowsMeetNow', 
+    'Microsoft.MSPaint'
 )
 
-# Define Windows Capabilities
 $capabilities = @(
-    'MathRecognizer', 'OpenSSH.Client',
-    'Microsoft.Windows.PowerShell.ISE', 'App.Support.QuickAssist', 'App.StepsRecorder',
-    'Media.WindowsMediaPlayer', 'Microsoft.Windows.WordPad', 'Microsoft.Windows.MSPaint'
+    'MathRecognizer', 
+    'OpenSSH.Client',
+    'Microsoft.Windows.PowerShell.ISE', 
+    'App.Support.QuickAssist', 
+    'App.StepsRecorder',
+    'Media.WindowsMediaPlayer', 
+    'Microsoft.Windows.WordPad', 
+    'Microsoft.Windows.MSPaint'
 )
 
-# Apply registry mods to prevent reinstallation and disable features
 function Set-AppsRegistry {
     $MultilineComment = @"
 Windows Registry Editor Version 5.00
@@ -589,7 +330,6 @@ Windows Registry Editor Version 5.00
     Regedit.exe /S "$env:TEMP\Windows_Apps.reg" -Force -ErrorAction SilentlyContinue
 }
 
-# Removes OneDrive during Windows Installation
 function Remove-OneDrive {
     Remove-Item "C:\Users\Default\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\OneDrive.lnk" -ErrorAction SilentlyContinue
     Remove-Item "C:\Users\Default\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\OneDrive.exe" -ErrorAction SilentlyContinue
@@ -597,10 +337,9 @@ function Remove-OneDrive {
     Remove-Item "C:\Windows\SysWOW64\OneDriveSetup.exe" -ErrorAction SilentlyContinue
 }
 
-# Uninstalls OneDrive in existing Windows Installation
 function Uninstall-OneDrive {
     # stop onedrive running
-    Stop-Process -Force -Name OneDrive -ErrorAction SilentlyContinue | Out-Null
+    Stop-Process -Force -Name OneDrive -ErrorAction SilentlyContinue  
     # uninstall onedrive w10
     cmd /c "C:\Windows\SysWOW64\OneDriveSetup.exe -uninstall >nul 2>&1"
     # clean onedrive w10 
@@ -609,174 +348,30 @@ function Uninstall-OneDrive {
     cmd /c "C:\Windows\System32\OneDriveSetup.exe -uninstall >nul 2>&1"
 }
 
-# Disables Recall
 function Disable-Recall {
-    Dism /Online /Disable-Feature /Featurename:Recall /NoRestart | Out-Null
+    Dism /Online /Disable-Feature /Featurename:Recall /NoRestart  
 }
 
-# Remove All Bloatware (UWP) Apps from Windows.
 function Remove-Apps {
-    # Show-Header
-    # Write-Host "Are You Sure You Want to Remove ALL Windows Apps? (Y/N)" -ForegroundColor Black -Backgroundcolor Yellow
-    # Write-Host "Includes: OneDrive, Teams, Outlook for Windows and more . . ." -ForegroundColor Black -Backgroundcolor Yellow
-    # Write-Host "(CAUTION! Can't be Undone!)" -BackgroundColor Red
-    $confirmation = 'Y'
-
-    if ($confirmation -eq 'Y' -or $confirmation -eq 'y') {
-        # Show-Header
-        Write-Host "Removing Pre-installed Apps and Features. Please wait . . ."
-        # Bloatware Apps
-        Get-AppxPackage -AllUsers |
-        Where-Object { $appxPackages -contains $_.Name } |
-        Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue | Out-Null
-        # Legacy Windows Features & Apps
-        Get-WindowsCapability -Online |
-        Where-Object { $capabilities -contains ($_.Name -split '~')[0] } |
-        Remove-WindowsCapability -Online -ErrorAction SilentlyContinue | Out-Null
-        # Calls specified functions
-        # Show-Header
-        Set-AppsRegistry
-        Uninstall-OneDrive
-        # Show-Header
-        Disable-Recall
-        # Show-Header
-        Write-Host "Pre-installed Apps and Features removed successfully." -BackgroundColor Green
-        # Wait-IfNotSpecialize
-    }
-    else {
-        Show-MainMenu
-    }
-}
-# End of Software & Apps Functions
-
-# Start of Privacy & Security Functions
-# Check if Windows Defender is Enabled or Disabled
-function Get-WindowsDefenderStatus {
-    Clear-Host
-    $defenderKey = "HKLM:\SYSTEM\CurrentControlSet\Services\Sense"
-    $defenderStatus = (Get-ItemProperty -Path $defenderKey -Name Start).Start
-
-    if ($defenderStatus -eq 4) {
-        # Show-Header
-        Write-Host "Windows Defender is permanently disabled." -ForegroundColor Red
-        Write-Host "Press 1 to enable Windows Defender."
-        Write-Host "Note: Enabling Defender using this script means it cannot be permanently disabled again without reinstalling Windows with the UnattendedWinstall XML file."
-        
-        $choice = Read-Host "Enter your choice (1 to enable, any other key to cancel)"
-        
-        if ($choice -eq '1') {
-            $confirm = Read-Host "Are you sure you want to enable Windows Defender? (y/n)"
-            if ($confirm -eq 'y') {
-                Enable-WindowsDefender
-            }
-            else {
-                Show-MainMenu
-            }
-        }
-        else {
-            Show-MainMenu
-        }
-    }
-    else {
-        # Show-Header
-        Write-Host "Windows Defender is already enabled. No action is needed." -ForegroundColor Green
-        Write-Host "Press any key to go back to the main menu."
-        Read-Host
-        Show-MainMenu
-    }
+    Write-Host "Removing Pre-installed Apps and Features. Please wait . . ."
+    # Bloatware Apps
+    Get-AppxPackage -AllUsers |
+    Where-Object { $appxPackages -contains $_.Name } |
+    Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue  
+    # Legacy Windows Features & Apps
+    Get-WindowsCapability -Online |
+    Where-Object { $capabilities -contains ($_.Name -split '~')[0] } |
+    Remove-WindowsCapability -Online -ErrorAction SilentlyContinue  
+    # Calls specified functions
+    Set-AppsRegistry
+    Uninstall-OneDrive
+    Disable-Recall
+    Write-Host "Pre-installed Apps and Features removed successfully." -BackgroundColor Green
 }
 
-
-# Function to Enable Windows Defender
-function Enable-WindowsDefender {
-    $MultilineComment = @"
-Windows Registry Editor Version 5.00
-
-; Enables Windows Defender to start in Windows Security
-[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Sense]
-"Start"=dword:00000003
-
-[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\WdBoot]
-"Start"=dword:00000000
-
-[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\WdFilter]
-"Start"=dword:00000000
-
-[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\WdNisDrv]
-"Start"=dword:00000003
-
-[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\WdNisSvc]
-"Start"=dword:00000003
-
-[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\WinDefend]
-"Start"=dword:00000002
-"@
-    Set-Content -Path "$env:TEMP\Enable_Windows_Defender.reg" -Value $MultilineComment -Force
-    $path = "$env:TEMP\Enable_Windows_Defender.reg"
-    (Get-Content $path) -replace "\?", "$" | Out-File $path
-    Regedit.exe /S "$env:TEMP\Enable_Windows_Defender.reg"
-    Write-Host "Windows Defender has been enabled." -ForegroundColor Green
-    Write-Host "Press any key to return to the main menu."
-    Read-Host
-}
-
-# Check if User Account Control is Enabled or Disabled
-function Get-UACStatus {
-    Clear-Host
-    $uacKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
-    
-    # Get the EnableLUA and ConsentPromptBehaviorAdmin values
-    $uacStatus = (Get-ItemProperty -Path $uacKey -Name EnableLUA).EnableLUA
-    $promptBehavior = (Get-ItemProperty -Path $uacKey -Name ConsentPromptBehaviorAdmin).ConsentPromptBehaviorAdmin
-
-    # Determine if UAC is disabled based on both keys
-    if ($uacStatus -eq 0 -or $promptBehavior -eq 0) {
-        # Show-Header
-        Write-Host "User Account Control (UAC) is currently disabled." -ForegroundColor Red
-        Write-Host "1. Enable UAC"
-    }
-    else {
-        # Show-Header
-        Write-Host "User Account Control (UAC) is currently enabled." -ForegroundColor Green
-        Write-Host "1. Disable UAC"
-    }
-    Write-Host "0. Main Menu"
-    $choice = Read-Host "Select an option"
-    switch ($choice) {
-        1 {
-            $confirm = Read-Host "Are you sure you want to change UAC status? (y/n)"
-            if ($confirm -eq 'y') {
-                if ($uacStatus -eq 0) {
-                    # Enable UAC and set the default prompt behavior
-                    cmd.exe /c reg.exe add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v EnableLUA /t REG_DWORD /d 1 /f 2>&1 | Out-Null
-                    cmd.exe /c reg.exe add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v ConsentPromptBehaviorAdmin /t REG_DWORD /d 2 /f 2>&1 | Out-Null
-                    Write-Host "UAC has been enabled successfully." -ForegroundColor Green
-                }
-                else {
-                    # Disable UAC and default prompt behavior
-                    cmd.exe /c reg.exe add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v EnableLUA /t REG_DWORD /d 0 /f 2>&1 | Out-Null
-                    cmd.exe /c reg.exe add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v ConsentPromptBehaviorAdmin /t REG_DWORD /d 0 /f 2>&1 | Out-Null
-                    Write-Host "UAC has been disabled successfully." -ForegroundColor Green
-                }
-                Write-Host "Press any key to continue."
-                Read-Host
-                Get-UACStatus
-            }
-            else {
-                Get-UACStatus
-            }
-        }
-        0 { Return }
-        default { Write-Host "Invalid choice. Try again."; Get-UACStatus }
-    }
-}
-
-
-# Function to Apply the Recommended Privacy Settings
 function Set-RecommendedPrivacySettings {
     
     if (-not $isSpecializePhase) {
-        # Show-Header
         Write-Host "Applying Recommended Privacy Settings . . ."
     }
 
@@ -830,17 +425,12 @@ Windows Registry Editor Version 5.00
     Start-Process -FilePath "regedit.exe" -ArgumentList "/S `"$env:TEMP\Recommended_Privacy_Settings.reg`"" -NoNewWindow -Wait
 
     if (-not $isSpecializePhase) {
-        # Show-Header
         Write-Host "Recommended Privacy Settings Applied." -ForegroundColor Green
-        # Wait-IfNotSpecialize
     }
 }
 
-
-# Function to Apply the Default Privacy Settings
 function Set-DefaultPrivacySettings {
     
-    # Show-Header
     Write-Host "Applying Default Privacy Settings . . ."
 
     $MultilineComment = @"
@@ -890,18 +480,12 @@ Windows Registry Editor Version 5.00
 "@
     Set-Content -Path "$env:TEMP\Default_Privacy_Settings.reg" -Value $MultilineComment -Force
     Regedit.exe /S "$env:TEMP\Default_Privacy_Settings.reg"
-    # Show-Header
     Write-Host "Default Privacy Settings Applied." -ForegroundColor Green
-    # Wait-IfNotSpecialize
 }
 
-# End of Privacy and Security Functions
-
-# Start of Windows Update Functions
 function Set-RecommendedUpdateSettings {
 
     if (-not $isSpecializePhase) {
-        # Show-Header
         Write-Host "Applying Recommended Windows Update Settings . . ."
     }
 
@@ -938,15 +522,12 @@ Windows Registry Editor Version 5.00
     Regedit.exe /S "$env:TEMP\Recommended_Windows_Update_Settings.reg"
 
     if (-not $isSpecializePhase) {
-        # Show-Header
         Write-Host "Recommended Windows Update Settings Applied." -ForegroundColor Green
-        # Wait-IfNotSpecialize
     }
 }
 
 function Set-DefaultUpdateSettings {
 
-    # Show-Header
     Write-Host "Applying Default Windows Update Settings . . ."
 
     $MultilineComment = @"
@@ -980,13 +561,9 @@ Windows Registry Editor Version 5.00
     Set-Content -Path "$env:TEMP\Default_Windows_Update_Settings.reg" -Value $MultilineComment -Force
     Regedit.exe /S "$env:TEMP\Default_Windows_Update_Settings.reg"
 
-    # Show-Header
     Write-Host "Default Windows Update Settings Applied." -ForegroundColor Green
-    # Wait-IfNotSpecialize
 }
-# End of Windows Update Functions
 
-# Start of Registry Optimizations
 function Set-RecommendedHKLMRegistry {
     # Create Registry Keys
     $MultilineComment = @"
@@ -1196,9 +773,7 @@ Windows Registry Editor Version 5.00
     (Get-Content $path) -replace "\?", "$" | Out-File $path
     # import reg file
     Regedit.exe /S "$env:TEMP\Optimize_LocalMachine_Registry.reg"
-    # Show-Header
     Write-Host "Recommended Local Machine Registry Settings Applied." -ForegroundColor Green
-    # Wait-IfNotSpecialize
 }
 
 function Set-DefaultHKLMRegistry {
@@ -1437,14 +1012,10 @@ Windows Registry Editor Version 5.00
                 (Get-Content $path) -replace "\?", "$" | Out-File $path
     # import reg file
     Regedit.exe /S "$env:TEMP\Restore_LocalMachine_Registry.reg"
-    # Show-Header
     Write-Host "Default Local Machine Registry Settings Applied." -ForegroundColor Green
-    # Wait-IfNotSpecialize
 }
 
-
 function Set-RecommendedHKCURegistry {
-    Clear-Host
     Write-Host "Optimizing User Registry . . ."
 
     # Set Wallpaper (Helper Function for Recommended User Settings)
@@ -1452,7 +1023,7 @@ function Set-RecommendedHKCURegistry {
     $darkModeWallpaperPath = "C:\Windows\Web\4K\Wallpaper\Windows\PC-Spezialist_BG.jpg"
 
     function Set-Wallpaper ($wallpaperPath) {
-        reg.exe add "HKEY_CURRENT_USER\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "$wallpaperPath" /f | Out-Null
+        reg.exe add "HKEY_CURRENT_USER\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "$wallpaperPath" /f  
         # Notify the system of the change
         rundll32.exe user32.dll, UpdatePerUserSystemParameters
     }
@@ -1651,7 +1222,7 @@ Windows Registry Editor Version 5.00
 ; disable fix scaling for apps
 ; disable menu show delay
 [HKEY_CURRENT_USER\Control Panel\Desktop]
-"UserPreferencesMask"=hex(2):90,12,03,80,10,00,00,00
+"UserPreferencesMask"=hex(2):9e,1e,07,80,12,00,00,00
 "FontSmoothing"="2"
 "LogPixels"=dword:00000060
 "Win8DpiScaling"=dword:00000001
@@ -1924,13 +1495,10 @@ Windows Registry Editor Version 5.00
 "@
     Set-Content -Path "$env:TEMP\Optimize_User_Registry.reg" -Value $MultilineComment -Force
     Regedit.exe /S "$env:TEMP\Optimize_User_Registry.reg"
-    # Show-Header
     Write-Host "Recommended User Registry Settings Applied." -ForegroundColor Green
-    # Wait-IfNotSpecialize
 }
 
 function Set-DefaultHKCURegistry {
-    Clear-Host
     Write-Host "Restoring User Default Registry Settings . . ."
     $MultilineComment = @"
 Windows Registry Editor Version 5.00
@@ -2315,13 +1883,9 @@ Windows Registry Editor Version 5.00
 "@
     Set-Content -Path "$env:TEMP\Restore_User_Registry.reg" -Value $MultilineComment -Force
     Regedit.exe /S "$env:TEMP\Restore_User_Registry.reg"
-    # Show-Header
     Write-Host "Default User Registry Settings Applied." -ForegroundColor Green
-    # Wait-IfNotSpecialize
 }
-# End of Registry Optimizations
 
-# Start of Tasks and Services Functions
 function Set-ServiceStartup {
     # List of services to set to Disabled
     $disabledServices = @(
@@ -2382,30 +1946,24 @@ function Set-ServiceStartup {
     # Set the services in the disabledServices list to Disabled
     foreach ($service in $disabledServices) {
         try {
-            Set-Service -Name $service -StartupType Disabled -ErrorAction SilentlyContinue | Out-Null
+            Set-Service -Name $service -StartupType Disabled -ErrorAction SilentlyContinue  
         }
         catch {
-            # Show-Header
             Write-Host "Failed to set $service to Disabled: $_" -ForegroundColor Yellow
-            # Wait-IfNotSpecialize
         }
     }
 
     # Set the services in the manualServices list to Manual
     foreach ($service in $manualServices) {
         try {
-            Set-Service -Name $service -StartupType Manual -ErrorAction SilentlyContinue | Out-Null
+            Set-Service -Name $service -StartupType Manual -ErrorAction SilentlyContinue  
         }
         catch {
-            # Show-Header
             Write-Host "Failed to set $service to Manual: $_" -ForegroundColor Yellow
-            # Wait-IfNotSpecialize
         }
     }
 
-    # Show-Header
     Write-Host "Service startup types updated successfully." -ForegroundColor Green
-    # Wait-IfNotSpecialize
 }
 
 function Set-DefaultServices {
@@ -2415,15 +1973,14 @@ function Set-DefaultServices {
     $successCount = 0
     foreach ($service in $allServices) {
         try {
-            # Show-Header
             Write-Host "Setting services to Automatic where permissions are allowed. Please wait . . ."
             # Set the service startup type to Automatic using Set-Service
-            Set-Service -Name $service.Name -StartupType Automatic 2>&1 | Out-Null
+            Set-Service -Name $service.Name -StartupType Automatic 2>&1  
 
             # Forcibly set the startup type to Automatic using WMI as a fallback
-            $wmiService = Get-WmiObject -Class Win32_Service -Filter "Name='$($service.Name)'" 2>&1 | Out-Null
+            $wmiService = Get-WmiObject -Class Win32_Service -Filter "Name='$($service.Name)'" 2>&1  
             if ($wmiService) {
-                $result = $wmiService.ChangeStartMode("Automatic") 2>&1 | Out-Null
+                $result = $wmiService.ChangeStartMode("Automatic") 2>&1  
                 if ($result.ReturnValue -eq 0) {
                     $successCount++
                 }
@@ -2434,9 +1991,7 @@ function Set-DefaultServices {
             continue
         }
     }
-    # Show-Header
     Write-Host "Successfully set services to Automatic where permissions allowed." -ForegroundColor Green
-    # Wait-IfNotSpecialize
 }
 
 function Disable-ScheduledTasks {
@@ -2461,7 +2016,7 @@ function Disable-ScheduledTasks {
     foreach ($task in $scheduledTasks) {
         try {
             # Disable the task without wildcards
-            schtasks /Change /TN $task /Disable 2>&1 | Out-Null
+            schtasks /Change /TN $task /Disable 2>&1  
             $successCount++
         }
         catch {
@@ -2470,9 +2025,7 @@ function Disable-ScheduledTasks {
         }
     }
     
-    # Show-Header
     Write-Host "Successfully disabled unneeded scheduled tasks." -ForegroundColor Green
-    # Wait-IfNotSpecialize
 }
 
 function Enable-ScheduledTasks {
@@ -2497,7 +2050,7 @@ function Enable-ScheduledTasks {
     foreach ($task in $scheduledTasks) {
         try {
             # Disable the task without wildcards
-            schtasks /Change /TN $task /Disable 2>&1 | Out-Null
+            schtasks /Change /TN $task /Disable 2>&1  
             $successCount++
         }
         catch {
@@ -2506,17 +2059,13 @@ function Enable-ScheduledTasks {
         }
     }
     
-    # Show-Header
     Write-Host "Successfully Enabled Default scheduled tasks." -ForegroundColor Green
-    # Wait-IfNotSpecialize
 }
-# End of Tasks and Services Functions
 
-# Start of Power Settings Functions
 function Set-RecommendedPowerSettings {
     Clear-Host
     # Import and set Ultimate power plan
-    cmd /c "powercfg /duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 99999999-9999-9999-9999-999999999999 >nul 2>&1 & powercfg /SETACTIVE 99999999-9999-9999-9999-999999999999 >nul 2>&1"
+    cmd /c "powercfg /duplicatescheme 381b4222-f694-41f0-9685-ff5bb260df2e 99999999-9999-9999-9999-999999999999 >nul 2>&1 & powercfg /SETACTIVE 99999999-9999-9999-9999-999999999999 >nul 2>&1"
 
     # Get all power plans and delete them
     powercfg /L | ForEach-Object {
@@ -2536,14 +2085,14 @@ function Set-RecommendedPowerSettings {
         'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FlyoutMenuSettings /v ShowSleepOption /t REG_DWORD /d 0', # Hides the Sleep option from the Power menu
         'HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Power /v HiberbootEnabled /t REG_DWORD /d 0', # Disables Fast Startup (Hiberboot)
         'HKLM\SYSTEM\ControlSet001\Control\Power\PowerSettings\54533251-82be-4824-96c1-47b60b740d00\0cc5b647-c1df-4637-891a-dec35c318583 /v ValueMax /t REG_DWORD /d 0', # Unparks CPU cores by setting the maximum processor state
-        'HKLM\SYSTEM\CurrentControlSet\Control\Power\PowerThrottling /v PowerThrottlingOff /t REG_DWORD /d 1', # Disables power throttling
+        'HKLM\SYSTEM\CurrentControlSet\Control\Power\PowerThrottling /v PowerThrottlingOff /t REG_DWORD /d 0', # Disables power throttling
         'HKLM\System\ControlSet001\Control\Power\PowerSettings\2a737441-1930-4402-8d77-b2bebba308a3\0853a681-27c8-4100-a2fd-82013e970683 /v Attributes /t REG_DWORD /d 2', # Unhides "Hub Selective Suspend Timeout"
         'HKLM\System\ControlSet001\Control\Power\PowerSettings\2a737441-1930-4402-8d77-b2bebba308a3\d4e98f31-5ffe-4ce1-be31-1b38b384c009 /v Attributes /t REG_DWORD /d 2' # Unhides "USB 3 Link Power Management"
     )
 
 
     foreach ($reg in $regChanges) {
-        cmd /c "reg add `$reg` /f >nul 2>&1"
+        cmd /c "reg add $reg /f >nul 2>&1"
     }
 
     # Modify Power Plan settings
@@ -2596,16 +2145,24 @@ function Set-RecommendedPowerSettings {
         }
     }
 
-    if (-not $isSpecializePhase) {
-        # Show-Header
-        Write-Host "Recommended Power Settings Applied." -ForegroundColor Green
-        # Wait-IfNotSpecialize
-        return
-    }
+    
+        # Set display off after 5 minutes (300 seconds) on battery
+    powercfg /change 99999999-9999-9999-9999-999999999999 /monitor-timeout-dc 5
+
+    # Set sleep after 15 minutes (900 seconds) on battery
+    powercfg /change 99999999-9999-9999-9999-999999999999 /standby-timeout-dc 15
+
+    # Set minimum processor state to 5% on battery
+    powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 SUB_PROCESSOR PROCTHROTTLEMIN 5
+    powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 SUB_PROCESSOR PROCTHROTTLEMIN 5
+
+    # Apply the changes
+    powercfg /setactive 99999999-9999-9999-9999-999999999999
+    Write-Host "Recommended Power Settings Applied." -ForegroundColor Green
+    
 }
 
 function Set-DefaultPowerSettings {
-    Clear-Host
     # Restore default power plans and enable hibernate
     powercfg -restoredefaultschemes
     cmd /c "powercfg /hibernate on >nul 2>&1"
@@ -2625,13 +2182,11 @@ function Set-DefaultPowerSettings {
         cmd /c "reg add `$reg` /f >nul 2>&1"
     }
 
-    # Show-Header
     Write-Host "Default Power Settings Applied." -ForegroundColor Green
-    # Wait-IfNotSpecialize
     return
 }
 
-function Set-RecommendedUserRegistry {
+function Set-UserCustomization {
 
     # Uninstall Copilot
     Get-AppxPackage -Name 'Microsoft.Copilot' | Remove-AppxPackage
@@ -2816,7 +2371,7 @@ Windows Registry Editor Version 5.00
 ; disable fix scaling for apps
 ; disable menu show delay
 [HKEY_CURRENT_USER\Control Panel\Desktop]
-"UserPreferencesMask"=hex(2):90,12,03,80,10,00,00,00
+"UserPreferencesMask"=hex:9e,1e,07,80,12,00,00,00
 "FontSmoothing"="2"
 "LogPixels"=dword:00000060
 "Win8DpiScaling"=dword:00000001
@@ -3102,7 +2657,7 @@ Windows Registry Editor Version 5.00
     $darkModeWallpaperPath = "C:\Windows\Web\4K\Wallpaper\Windows\PC-Spezialist_BG.jpg"
 
     function Set-Wallpaper ($wallpaperPath) {
-        reg.exe add "HKEY_CURRENT_USER\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "$wallpaperPath" /f | Out-Null
+        reg.exe add "HKEY_CURRENT_USER\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "$wallpaperPath" /f  
         # Notify the system of the change
         rundll32.exe user32.dll, UpdatePerUserSystemParameters
     }
@@ -3121,43 +2676,6 @@ Windows Registry Editor Version 5.00
     }
     
 }
-
-# End of Power Settings Functions
-
-# END OF COMMAND & OPERATION FUNCTIONS
-
-# Check if this is running in the specialize phase to Apply Settings automatically during Windows Installation
-if (Test-Path -Path $markerFilePath) {
-    # Bloatware Apps
-    Get-AppxProvisionedPackage -Online |
-    Where-Object { $appxPackages -contains $_.DisplayName } |
-    Remove-AppxProvisionedPackage -AllUsers -Online -ErrorAction SilentlyContinue
-    # Legacy Windows Features & Apps
-    Get-WindowsCapability -Online |
-    Where-Object { $capabilities -contains ($_.Name -split '~')[0] } |
-    Remove-WindowsCapability -Online -ErrorAction SilentlyContinue
-    # Additional Software & Apps
-    Set-AppsRegistry
-    Remove-OneDrive
-    Disable-Recall
-    # Privacy & Security
-    Set-RecommendedPrivacySettings
-    # Windows Updates
-    Set-RecommendedUpdateSettings
-    # Optimize Registry
-    Set-RecommendedHKLMRegistry
-    # Tasks and Services
-    Disable-ScheduledTasks
-    Set-ServiceStartup
-    # Power Settings
-    Set-RecommendedPowerSettings
-    exit
-}
-
-# Main loop to keep showing the main menu
-#while ($script:loop) {
-#    Show-MainMenu
-#}
 
 # Holder for None (Must keep)
 Function None {
