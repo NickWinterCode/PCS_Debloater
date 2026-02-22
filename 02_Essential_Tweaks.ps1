@@ -73,17 +73,17 @@ Stop-Service "SysMain" -WarningAction SilentlyContinue
 Set-Service "SysMain" -StartupType Disabled
 
 # Task Manager Details
-#If ((get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name CurrentBuild).CurrentBuild -lt 22557) {
+If ((get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name CurrentBuild).CurrentBuild -lt 22557) {
     
-    #$taskmgr = Start-Process -WindowStyle Hidden -FilePath taskmgr.exe -PassThru
-    #Do {
-    #    Start-Sleep -Milliseconds 100
-    #    $preferences = Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\TaskManager" -Name "Preferences" -ErrorAction SilentlyContinue
-    #} Until ($preferences)
-    #Stop-Process $taskmgr
-    #$preferences.Preferences[28] = 0
-    #Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\TaskManager" -Name "Preferences" -Type Binary -Value $preferences.Preferences
-#}
+    $taskmgr = Start-Process -WindowStyle Hidden -FilePath taskmgr.exe -PassThru
+    Do {
+        Start-Sleep -Milliseconds 100
+        $preferences = Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\TaskManager" -Name "Preferences" -ErrorAction SilentlyContinue
+    } Until ($preferences)
+    Stop-Process $taskmgr
+    $preferences.Preferences[28] = 0
+    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\TaskManager" -Name "Preferences" -Type Binary -Value $preferences.Preferences
+}
 
 If (!(Test-Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\OperationStatusManager")) {
     New-Item -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\OperationStatusManager" | Out-Null
