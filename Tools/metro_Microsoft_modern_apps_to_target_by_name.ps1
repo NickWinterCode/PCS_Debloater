@@ -99,6 +99,8 @@ Remove-App "Microsoft.Messaging"                       # Messaging app
 Remove-App "Microsoft.MicrosoftJackpot"                # Jackpot app
 Remove-App "Microsoft.MicrosoftJigsaw"                 # Jigsaw app
 Remove-App "Microsoft.MicrosoftMahjong"                # Advertising framework
+Remove-App "Microsoft.Whiteboard"
+Remove-App "Microsoft.MicrosoftJournal"
 Remove-App "Microsoft.MicrosoftOfficeHub"
 Remove-App "Microsoft.MicrosoftPowerBIForWindows"      # Power BI app - Business analytics
 Remove-App "Microsoft.MicrosoftRewards"
@@ -146,8 +148,8 @@ Remove-App "Microsoft.Xbox*"
 Remove-App "Microsoft.Xbox.TCUI"
 Remove-App "Microsoft.XboxApp"
 Remove-App "Microsoft.XboxGameCallableUI"
-#Remove-App "Microsoft.XboxGameOverlay"
-#Remove-App "Microsoft.XboxGamingOverlay"
+Remove-App "Microsoft.XboxGameOverlay"
+Remove-App "Microsoft.XboxGamingOverlay"
 Remove-App "Microsoft.XboxIdentityProvider"
 Remove-App "Microsoft.XboxSpeechToTextOverlay"
 Remove-App "Microsoft.Zune"                           # Zune collection of apps

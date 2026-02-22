@@ -3,7 +3,7 @@ for /f "delims=" %%i in ('powershell -Command "(Get-Date).ToString('yyyy-MM-dd_H
 set "logFolder=%userprofile%\Desktop\%COMPUTERNAME%"
 if not exist "%logFolder%" mkdir "%logFolder%"
 set "scriptName=%~nx0"
-set "log=%logFolder%\%scriptName%_%datetime%.log"
+set "log=%logFolder%\%scriptName%_%datetime%.txt"
 
 call :log > %log% 2>&1
 
@@ -228,11 +228,6 @@ reg add "HKLM\SYSTEM\CurrentControlSet\Services\wercplsupport" /v Start /t REG_D
 ::====================
 echo [*] Disable Transparency Effects
 reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v EnableTransparency /t REG_DWORD /d 0 /f
-
-::====================
-echo [*] RUN OneDrive_Uninstaller.cmd + the uninstaller ps1
-powershell -ExecutionPolicy Bypass -File "%~dp0.\Uninstall-OneDrive.ps1"
-call "%~dp0OneDrive_Uninstaller.cmd"
 
 ::====================
 echo [*] Disable Cortana

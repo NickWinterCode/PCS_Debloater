@@ -6,7 +6,7 @@
 	"Status" : 
 	{
 		"foundDevices" : 0,
-		"lastDeviceScan" : 0,
+		"lastDeviceScan" : 46218148708353,
 		"lastRevert" : 0,
 		"lastScan" : 0,
 		"lastUpdate" : 0,
@@ -17,16 +17,16 @@
 	},
 	"computerInfo" : 
 	{
-		"baseboard_manufacturer" : "Micro-Star International Co., Ltd.",
-		"baseboard_product" : "PRO H610M-G DDR4 (MS-7D46)",
-		"baseboard_version" : "1.0",
+		"baseboard_manufacturer" : "Gigabyte Technology Co., Ltd.",
+		"baseboard_product" : "B760M DS3H DDR4",
+		"baseboard_version" : "x.x",
 		"bios_manufacturer" : "American Megatrends International, LLC.",
-		"bios_name" : "1.Y7",
-		"bios_smbios_version" : "1.Y7",
+		"bios_name" : "F21c",
+		"bios_smbios_version" : "F21c",
 		"bios_version" : "WORTMA - 1072009",
-		"model" : "EU1000097;2140001",
+		"model" : "1009981;2120783",
 		"system_family" : "PC-TERRA;PC-BUSINES;",
-		"system_sku" : "4039407086160",
+		"system_sku" : "4039407081295",
 		"type" : "desktop",
 		"vendor" : "Wortmann_AG"
 	},

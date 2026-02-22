@@ -1,12 +1,12 @@
 :: original script by ShadowWhisperer https://github.com/ShadowWhisperer/Remove-MS-Edge
 @echo on
-for /f "delims=" %%i in ('powershell -Command "(Get-Date).ToString('yyyy-MM-dd_HH-mm-ss')"') do set datetime=%%i
-set "logFolder=%userprofile%\Desktop\%COMPUTERNAME%"
-if not exist "%logFolder%" mkdir "%logFolder%"
-set "scriptName=%~nx0"
-set "log=%logFolder%\%scriptName%_%datetime%.log"
+::for /f "delims=" %%i in ('powershell -Command "(Get-Date).ToString('yyyy-MM-dd_HH-mm-ss')"') do set datetime=%%i
+::set "logFolder=%userprofile%\Desktop\%COMPUTERNAME%"
+::if not exist "%logFolder%" mkdir "%logFolder%"
+::set "scriptName=%~nx0"
+::set "log=%logFolder%\%scriptName%_%datetime%.txt"
 
-call :log > %log% 2>&1
+::call :log > %log% 2>&1
 
 :log
 title Edge Remover
@@ -177,5 +177,6 @@ for /f "tokens=*" %%k in ('reg query "%reg_path%" /s 2^>nul ^| findstr /b /i "%r
     if "!delete_key!"=="true" reg delete "!full_key!" /f >nul 2>&1
 )
 endlocal
+call %~dp0Privacy_Edge_Remover.bat
 timeout /t 1 /nobreak
 exit

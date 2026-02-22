@@ -1,58 +1,35 @@
 @echo off
-:: Check for admin rights
-net session >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Requesting administrative privileges...
-    powershell -Command "Start-Process '%~f0' -Verb RunAs"
-    exit /b
+
+:: BatchGotAdmin
+:-------------------------------------
+REM  --> Check for permissions
+    IF "%PROCESSOR_ARCHITECTURE%" EQU "amd64" (
+>nul 2>&1 "%SYSTEMROOT%\SysWOW64\cacls.exe" "%SYSTEMROOT%\SysWOW64\config\system"
+) ELSE (
+>nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 )
-:: DO NOT DELTE, IMPORTANT FOR SCRIPT FINDING
-cd %~dp0
 
-:: Copy Wallpaper to Systems Location and RemoteControl to Users Desktop
-copy "PC-Spezialist_BG.jpg" "C:\Windows\Web\4K\Wallpaper\Windows\PC-Spezialist_BG.jpg"
-copy "PCSpezialist Fernwartung.exe" "%userprofile%\Desktop\PCSpezialist Fernwartung.exe"
+REM --> If error flag set, we do not have admin.
+if '%errorlevel%' NEQ '0' (
+    echo Requesting administrative privileges...
+    goto UACPrompt
+) else ( goto gotAdmin )
 
-:: Run Tweaks
-powershell -ExecutionPolicy Bypass -File .\CreateRestorePoint.ps1
-powershell -ExecutionPolicy Bypass -File .\Essential_Tweaks.ps1
-powershell -ExecutionPolicy Bypass -File .\PC_Spezialist.ps1
+:UACPrompt
+    echo Set UAC = CreateObject^("Shell.Application"^) > "%temp%\getadmin.vbs"
+    set params= %*
+    echo UAC.ShellExecute "cmd.exe", "/c ""%~s0"" %params:"=""%", "", "runas", 1 >> "%temp%\getadmin.vbs"
 
-:: Run Debloater
-powershell -ExecutionPolicy Bypass -File .\Tools\metro_Microsoft_modern_apps_to_target_by_name.ps1
-powershell -ExecutionPolicy Bypass -File .\Tools\metro_3rd_party_modern_apps_to_target_by_name.ps1
+    "%temp%\getadmin.vbs"
+    del "%temp%\getadmin.vbs"
+    exit /B
 
-:: Misc.
-start /wait %~dp0Optimizer\_OptimizeHelper.bat
-start /wait %~dp0EnableGamebar.bat
-start /wait %~dp0SnapAssist.bat
-start /wait %~dp0RemoveEdge.bat
-start /wait %~dp0Program_Installer.bat
-start /wait %~dp0default_apps.bat
+:gotAdmin
+    pushd "%CD%"
+    CD /D "%~dp0"
+:--------------------------------------    
+::cd %~dp0
+powershell -ExecutionPolicy Bypass -File .\PC-UI.ps1
+pause
 
-:: Run Temp Cleanup
-start /wait %~dp0stage_1_tempclean\stage_1_tempclean.bat
-start /wait %~dp0TempFileCleanup.bat
 
-:: Move Logs to Desktop
-move "%systemdrive%\logs" "%userprofile%\Desktop\%COMPUTERNAME%"
-
-:: Delete Registry Files
-cd C:\ 
-del *.reg
-
-::DONE 
-cls 
-echo.
-echo  Done
-:CHOICE
-set /p userinp="Press ENTER to reboot, or E to exit: "
-if /i "%userinp%"=="E" goto END
-if "%userinp%"=="" goto REBOOT
-goto CHOICE
-:REBOOT
-echo Rebooting...
-shutdown /r /t 2
-exit /b
-:END
-exit /b
