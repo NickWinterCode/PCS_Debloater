@@ -248,11 +248,11 @@ function Invoke-GitHubAutoUpdate {
 }
 
 # Example usage:
-# Invoke-GitHubAutoUpdate `
-#     -RepoOwner 'NickWinterCode' `
-#     -RepoName 'PCS_Debloater' `
-#     -Branch 'main' `
-#     -ManifestPath 'update/manifest.json' `
-#     -ProjectRoot $PSScriptRoot `
-#     -EntryScriptRelativePath 'PCS_Debloater.ps1'
+Invoke-GitHubAutoUpdate `
+    -RepoOwner 'NickWinterCode' `
+    -RepoName 'PCS_Debloater' `
+    -Branch 'main' `
+    -ManifestPath 'update/manifest.json' `
+    -ProjectRoot $PSScriptRoot `
+    -EntryScriptRelativePath 'PCS_Debloater.ps1'
 
