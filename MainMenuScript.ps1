@@ -28,7 +28,7 @@ $scripts = @(
     [pscustomobject]@{ Name = 'Set FireFox, VLC, etc as default'; File = @('misc/default_apps.bat', 'misc/Set-FirefoxHomepage.ps1' ) }, 
     [pscustomobject]@{ Name = 'StartMenu & Taskbar Manager'; File = @('misc/StartMenuManager.ps1', 'misc/TaskbarManager.ps1') },
     # Cleaners
-    [pscustomobject]@{ Name = 'TempCleanup'; File = 'Cleanup/TempFileCleanup_Tron.bat' }
+    [pscustomobject]@{ Name = 'TempCleanup'; File = 'Cleanup/CLEANUP.ps1' }
 )
 
 # --- Window Configuration ---
@@ -100,12 +100,6 @@ Set-WindowSize
 Start-Sleep -Milliseconds 200
 Set-ConsoleWindowCentered
 
-# --- Auto Update (GitHub) ---
-try {
-    . "$PSScriptRoot\GitHubUpdater.ps1"
-    Invoke-GitHubAutoUpdate -RepoOwner 'NickWinterCode' -RepoName 'PCS_Debloater' -Branch 'main' -ManifestPath 'update/manifest.json' -ProjectRoot $PSScriptRoot -EntryScriptRelativePath 'MainMenuScript.ps1' -Quiet
-} catch { }
-
 # --- Import Required Functions ---
 try {
     . "$PSScriptRoot\Write-Menu.ps1"
@@ -176,7 +170,6 @@ function Export-SoftwareConfig {
 function Show-MainMenu {
     $scriptNames = $scripts.Name
     
-    # Display the menu with C key hint
     $selectedNames = Write-Menu -Title "  PC-Spezialist Optimizer v3.5 `n    Enter/Space = Select`n    Tab = Confirm | C = Config`n    A=all | U=none" -Entries $scriptNames -MultiSelect
     return $selectedNames
 }

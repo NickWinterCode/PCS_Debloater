@@ -1,1 +1,0 @@
-+ Install Adobe Acrobat (localversion from %~dp0/..)

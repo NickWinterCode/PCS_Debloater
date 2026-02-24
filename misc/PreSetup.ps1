@@ -46,10 +46,10 @@ add-type $code
 Write-Output "----- Change Order of Desktop Icons -----"
 try {
   . "$PSScriptRoot\REICON.ps1"
+  Set-IconPositionWithSwap -Name "Dieser PC" -X 36 -Y 2
+  Set-IconPositionWithSwap -Name "Papierkorb" -X 36 -Y 102
+  Set-IconPositionWithSwap -Name "Microsoft Edge" -X 36 -Y 202
+  Set-IconPositionWithSwap -Name "PCSpezialist Fernwartung" -X 1836 -Y 2
 } catch {
   Write-Output "FUCK, the Module wont load ... DAMIT"
 }
-Set-IconPositionWithSwap -Name "Dieser PC" -X 36 -Y 2
-Set-IconPositionWithSwap -Name "Papierkorb" -X 36 -Y 102
-Set-IconPositionWithSwap -Name "Microsoft Edge" -X 36 -Y 202
-Set-IconPositionWithSwap -Name "PCSpezialist Fernwartung" -X 1836 -Y 2

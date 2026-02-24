@@ -820,6 +820,15 @@ else {
 Write-Output "`n----- Change Order of Desktop Icons -----"
 try {
     . "$PSScriptRoot\REICON.ps1"
+    Set-IconPositionWithSwap -Name "Dieser PC" -X 36 -Y 2
+    Set-IconPositionWithSwap -Name "Papierkorb" -X 36 -Y 102
+    Set-IconPositionWithSwap -Name "Firefox" -X 36 -Y 202
+    Set-IconPositionWithSwap -Name "Thunderbird" -X 36 -Y 302
+    Set-IconPositionWithSwap -Name "LibreOffice" -X 36 -Y 402
+    Set-IconPositionWithSwap -Name "Adobe Acrobat" -X 36 -Y 502
+    Set-IconPositionWithSwap -Name "VLC media player" -X 36 -Y 602
+    Set-IconPositionWithSwap -Name "PCSpezialist Fernwartung" -X 1836 -Y 2
+    Set-IconPositionWithSwap -Name "CDBurnerXP" -X 36 -Y 702
 }
 catch {
     Write-Output "Warning: Could not load REICON module"
@@ -827,14 +836,3 @@ catch {
 
 $PublicDesktop = "$env:PUBLIC\Desktop"
 Remove-Item "$PublicDesktop\Microsoft Edge.lnk" -Force -ErrorAction SilentlyContinue
-Set-IconPositionWithSwap -Name "Dieser PC" -X 36 -Y 2
-Set-IconPositionWithSwap -Name "Papierkorb" -X 36 -Y 102
-Set-IconPositionWithSwap -Name "Firefox" -X 36 -Y 202
-Set-IconPositionWithSwap -Name "Thunderbird" -X 36 -Y 302
-Set-IconPositionWithSwap -Name "LibreOffice" -X 36 -Y 402
-Set-IconPositionWithSwap -Name "Adobe Acrobat" -X 36 -Y 502
-Set-IconPositionWithSwap -Name "VLC media player" -X 36 -Y 602
-Set-IconPositionWithSwap -Name "PCSpezialist Fernwartung" -X 1836 -Y 2
-Set-IconPositionWithSwap -Name "CDBurnerXP" -X 36 -Y 702
-
-Write-Host ""

@@ -28,4 +28,5 @@ if '%errorlevel%' NEQ '0' (
     pushd "%CD%"
     CD /D "%~dp0"
 :--------------------------------------  
+start "" powershell.exe -ExecutionPolicy Bypass -File "%~dp0\GitHubUpdater.ps1"
 start "" powershell.exe -ExecutionPolicy Bypass -File "%~dp0\MainMenuScript.ps1"

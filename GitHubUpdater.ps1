@@ -25,34 +25,22 @@ function Test-InternetAvailable {
     }
 }
 
-function New-HttpClient {
-    param(
-        [int]$TimeoutSeconds = 20
-    )
-
-    $handler = New-Object System.Net.Http.HttpClientHandler
-    $handler.AutomaticDecompression = [System.Net.DecompressionMethods]::GZip -bor [System.Net.DecompressionMethods]::Deflate
-
-    $client = New-Object System.Net.Http.HttpClient($handler)
-    $client.Timeout = [TimeSpan]::FromSeconds($TimeoutSeconds)
-    $null = $client.DefaultRequestHeaders.UserAgent.ParseAdd('PCS-Debloater-Updater')
-    return $client
-}
-
 function Get-HttpBytes {
     param(
         [Parameter(Mandatory = $true)][string]$Url,
         [int]$TimeoutSeconds = 20
     )
 
-    $client = $null
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    
+    $webClient = $null
     try {
-        $client = New-HttpClient -TimeoutSeconds $TimeoutSeconds
-        $task = $client.GetByteArrayAsync($Url)
-        return $task.GetAwaiter().GetResult()
+        $webClient = New-Object System.Net.WebClient
+        $webClient.Headers.Add('User-Agent', 'PCS-Debloater-Updater')
+        return $webClient.DownloadData($Url)
     }
     finally {
-        if ($client) { $client.Dispose() }
+        if ($webClient) { $webClient.Dispose() }
     }
 }
 
@@ -63,7 +51,14 @@ function Get-HttpStringUtf8 {
     )
 
     $bytes = Get-HttpBytes -Url $Url -TimeoutSeconds $TimeoutSeconds
-    return [System.Text.Encoding]::UTF8.GetString($bytes)
+    $text = [System.Text.Encoding]::UTF8.GetString($bytes)
+    
+    # Remove BOM (Byte Order Mark) if present
+    if ($text.Length -gt 0 -and $text[0] -eq [char]0xFEFF) {
+        $text = $text.Substring(1)
+    }
+    
+    return $text
 }
 
 function Test-SafeRelativePath {
@@ -125,11 +120,15 @@ function Invoke-GitHubAutoUpdate {
 
     $manifestText = $null
     try {
-        if (-not $Quiet) { Write-Host "[UPDATE] Checking for updates..." -ForegroundColor DarkGray }
+        if (-not $Quiet) { 
+            Write-Host "[UPDATE] Checking for updates..." -ForegroundColor DarkGray 
+        }
         $manifestText = Get-HttpStringUtf8 -Url $manifestUrl -TimeoutSeconds 20
     }
     catch {
-        if (-not $Quiet) { Write-Host "[UPDATE] Could not fetch manifest - skipping" -ForegroundColor DarkGray }
+        if (-not $Quiet) { 
+            Write-Host "[UPDATE] Could not fetch manifest - skipping" -ForegroundColor DarkGray 
+        }
         return
     }
 
@@ -138,7 +137,9 @@ function Invoke-GitHubAutoUpdate {
         $manifest = $manifestText | ConvertFrom-Json
     }
     catch {
-        if (-not $Quiet) { Write-Host "[UPDATE] Manifest JSON invalid - skipping" -ForegroundColor DarkGray }
+        if (-not $Quiet) { 
+            Write-Host "[UPDATE] Manifest JSON invalid - skipping" -ForegroundColor DarkGray 
+        }
         return
     }
 
@@ -220,16 +221,16 @@ function Invoke-GitHubAutoUpdate {
     }
 
     if ($updatedAny -and -not $Quiet) {
-        Write-Host "[UPDATE] Updated files:" -ForegroundColor DarkGray
+        Write-Host "[UPDATE] Updated files:" -ForegroundColor Green
         foreach ($p in $updatedList) {
-            Write-Host "[UPDATE]  - $p" -ForegroundColor DarkGray
+            Write-Host "[UPDATE]  - $p" -ForegroundColor Green
         }
     }
 
     if ($pendingSelfUpdate -and $selfUpdateTempFile -and (Test-Path $selfUpdateTempFile)) {
         $helper = Join-Path $ProjectRoot 'UpdateHelper.ps1'
         if (Test-Path $helper) {
-            if (-not $Quiet) { Write-Host "[UPDATE] Updating entry script and relaunching..." -ForegroundColor DarkGray }
+            if (-not $Quiet) { Write-Host "[UPDATE] Updating entry script and relaunching..." -ForegroundColor Yellow }
             $startArgs = @(
                 '-NoProfile',
                 '-ExecutionPolicy', 'Bypass',
@@ -245,3 +246,12 @@ function Invoke-GitHubAutoUpdate {
         }
     }
 }
+
+# Example usage:
+Invoke-GitHubAutoUpdate `
+    -RepoOwner 'NickWinterCode' `
+    -RepoName 'PCS_Debloater' `
+    -Branch 'main' `
+    -ManifestPath 'update/manifest.json' `
+    -ProjectRoot $PSScriptRoot `
+    -EntryScriptRelativePath 'PCS_Debloater.ps1'
