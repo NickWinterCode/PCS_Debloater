@@ -17,10 +17,10 @@ function Set-RegistryValue {
             New-Item -Path $Path -Force | Out-Null
         }
         Set-ItemProperty -Path $Path -Name $Name -Value $Value -Type $Type -Force
-        Write-Host "SUCCESS" "- $Path\$Name = $Value"
+        Write-Host " |" "SUCCESS" "- $Path\$Name = $Value"
     }
     catch {
-        Write-Host "ERROR" "Failed to set $Path\$Name : $($_.Exception.Message)"
+        Write-Host " |" "ERROR" "Failed to set $Path\$Name : $($_.Exception.Message)"
     }
 }
 
@@ -35,12 +35,12 @@ function Remove-RegistryValue {
             $existingValue = Get-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue
             if ($existingValue) {
                 Remove-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue
-                Write-Host "SUCCESS" "- Removed $Path\$Name"
+                Write-Host " |" "SUCCESS" "- Removed $Path\$Name"
             }
         }
     }
     catch {
-        Write-Host "ERROR" "Failed to remove $Path\$Name : $($_.Exception.Message)"
+        Write-Host " |" "ERROR" "Failed to remove $Path\$Name : $($_.Exception.Message)"
     }
 }
 
@@ -52,15 +52,15 @@ function Remove-RegistryKey {
     try {
         if (Test-Path $Path) {
             Remove-Item -Path $Path -Recurse -Force -ErrorAction SilentlyContinue
-            Write-Host "SUCCESS" "- Removed key $Path"
+            Write-Host " |" "SUCCESS" "- Removed key $Path"
         }
     }
     catch {
-        Write-Host "ERROR" "Failed to remove key $Path : $($_.Exception.Message)"
+        Write-Host " |" "ERROR" "Failed to remove key $Path : $($_.Exception.Message)"
     }
 }
 
-Write-Host ' -- Setting up power plan' -ForegroundColor Green "INFO"
+Write-Host "`n-- Setting up power plan" -ForegroundColor Green "INFO"
 
 $customPlanGuid = "69696969-6969-6969-6969-696969696969"
 
@@ -68,10 +68,10 @@ $existingPlan = powercfg /query $customPlanGuid 2>&1
 $planExists = $LASTEXITCODE -eq 0
 
 if ($planExists) {
-    Write-Host ' -- Power plan already exists, using existing plan' "INFO"
+    Write-Host "`n-- Power plan already exists, using existing plan" "INFO"
 }
 else {
-    Write-Host ' -- Creating new power plan' -ForegroundColor Green "INFO"
+    Write-Host "`n-- Creating new power plan" -ForegroundColor Green "INFO"
     $planCreated = $false
 
     $sourceSchemes = @(
@@ -81,10 +81,10 @@ else {
     )
 
     foreach ($scheme in $sourceSchemes) {
-        Write-Host ' -- Attempting to duplicate from $($scheme.Name)' -ForegroundColor Green "INFO"
+        Write-Host "`n-- Attempting to duplicate from $($scheme.Name)" -ForegroundColor Green "INFO"
         $result = powercfg /duplicatescheme $($scheme.Guid) $customPlanGuid 2>&1
         if ($LASTEXITCODE -eq 0) {
-            Write-Host ' -- Successfully created from $($scheme.Name)' "SUCCESS"
+            Write-Host "`n-- Successfully created from $($scheme.Name)" " |" "SUCCESS"
             powercfg /changename $customPlanGuid "Balanced PC-Spezialist" | Out-Null
             $planCreated = $true
             break
@@ -92,11 +92,11 @@ else {
     }
 
     if (-not $planCreated) {
-        Write-Host ' -- Failed to create power plan' "ERROR"
+        Write-Host "`n-- Failed to create power plan" " |" "ERROR"
     }
 }
 
-Write-Host ' -- Enabling hidden power settings' -ForegroundColor Green "INFO"
+Write-Host "`n-- Enabling hidden power settings" -ForegroundColor Green "INFO"
 $PowerSettingsBasePath = "HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerSettings"
 $hiddenSettings = @(
     @{ Subgroup = "2a737441-1930-4402-8d77-b2bebba308a3"; Setting = "0853a681-27c8-4100-a2fd-82013e970683" },
@@ -127,9 +127,9 @@ foreach ($item in $hiddenSettings) {
     catch {
     }
 }
-Write-Host ' -- Enabled $enabledCount hidden power settings' "SUCCESS"
+Write-Host "`n-- Enabled $enabledCount hidden power settings" " |" "SUCCESS"
 
-Write-Host ' -- Applying power settings' -ForegroundColor Green "INFO"
+Write-Host "`n-- Applying power settings" -ForegroundColor Green "INFO"
 
 $settings = @(
     @{ S = "7516b95f-f776-4464-8c53-06167f40cc99"; G = "3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e"; AC = 0; DC = 300; N = "Specifies the period of inactivity before Windows turns off the display" },
@@ -178,21 +178,21 @@ foreach ($setting in $settings) {
     catch {
     }
 }
-Write-Host ' -- Applied $appliedCount power settings' "SUCCESS"
+Write-Host "`n-- Applied $appliedCount power settings" " |" "SUCCESS"
 
-Write-Host ' -- Activating power plan' -ForegroundColor Green "INFO"
+Write-Host "`n-- Activating power plan" -ForegroundColor Green "INFO"
 powercfg /setactive 69696969-6969-6969-6969-696969696969 2>$null
 if ($LASTEXITCODE -eq 0) {
-    Write-Host ' -- Power plan activated successfully' "SUCCESS"
+    Write-Host "`n-- Power plan activated successfully" " |" "SUCCESS"
 }
 else {
-    Write-Host ' -- Failed to activate power plan' "WARNING"
+    Write-Host "`n-- Failed to activate power plan" "WARNING"
 }
 
-Write-Host ' -- Disabling Consumer Features' -ForegroundColor Green
+Write-Host "`n-- Disabling Consumer Features" -ForegroundColor Green
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent' -Name 'DisableWindowsConsumerFeatures' -Type DWord -Value 1
 
-Write-Host ' -- Disabling Recall' -ForegroundColor Green
+Write-Host "`n-- Disabling Recall" -ForegroundColor Green
 Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Windows\WindowsAI' -Name 'DisableAIDataAnalysis' -Type DWord -Value 1
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI' -Name 'DisableAIDataAnalysis' -Type DWord -Value 1
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI' -Name 'AllowRecallEnablement' -Type DWord -Value 0
@@ -203,10 +203,10 @@ if ($RecallFeature.State -eq "Enabled") {
     Disable-WindowsOptionalFeature -Online -FeatureName "Recall" -Remove -NoRestart
 }
 else {
-    Write-Host 'Recall is already disabled.'
+    Write-Host "Recall is already disabled."
 }
 
-Write-Host ' -- Debloating Edge' -ForegroundColor Green
+Write-Host "`n-- Debloating Edge" -ForegroundColor Green
 # Disable Microsoft Edge recommendations, feedback popups, MSN news feed, sponsored links, shopping assistant, and more.
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Edge' -Name 'EdgeEnhanceImagesEnabled' -Type DWord -Value 0
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Edge' -Name 'PersonalizationReportingEnabled' -Type DWord -Value 0
@@ -236,7 +236,7 @@ Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Edge' -Name 'WalletDo
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Edge' -Name 'NewTabPageContentEnabled' -Type DWord -Value 0
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Edge' -Name 'TabServicesEnabled' -Type DWord -Value 0
 
-Write-Host ' -- Removing Copilot' -ForegroundColor Green
+Write-Host "`n-- Removing Copilot" -ForegroundColor Green
 Get-AppxPackage "Microsoft.CoPilot" | Remove-AppxPackage
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsCopilot' -Name 'TurnOffWindowsCopilot' -Type DWord -Value 1
 Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Windows\WindowsCopilot' -Name 'TurnOffWindowsCopilot' -Type DWord -Value 1
@@ -249,26 +249,26 @@ Set-RegistryValue -Path 'HKLM:\SOFTWARE\Microsoft\Windows\Shell\Copilot' -Name '
 Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Windows\Shell\Copilot\BingChat' -Name 'IsUserEligible' -Type DWord -Value 0
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Edge' -Name 'HubsSidebarEnabled' -Type DWord -Value 0
 
-#Write-Host ' -- Uninstalling Widgets' -ForegroundColor Green
-Write-Host ' -- Disable Widgets' -ForegroundColor Green
+#Write-Host "`n-- Uninstalling Widgets" -ForegroundColor Green
+Write-Host "`n-- Disable Widgets" -ForegroundColor Green
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Dsh' -Name 'AllowNewsAndInterests' -Type DWord -Value 0
 #Get-AppxPackage *WebExperience* | Remove-AppxPackage
 #Set-RegistryValue -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\MicrosoftWindows.Client.WebExperience_cw5n1h2txyewy"
 #reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\MicrosoftWindows.Client.WebExperience_cw5n1h2txyewy" /f
 
-Write-Host ' -- Disabling Taskbar Widgets' -ForegroundColor Green
+Write-Host "`n-- Disabling Taskbar Widgets" -ForegroundColor Green
 Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name 'ShowTaskViewButton' -Type DWord -Value 0
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Microsoft\PolicyManager\default\NewsAndInterests\AllowNewsAndInterests' -Name 'value' -Type DWord -Value 0
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds' -Name 'EnableFeeds' -Type DWord -Value 0
 
-Write-Host ' -- Disabling Auto Map Downloads' -ForegroundColor Green
+Write-Host "`n-- Disabling Auto Map Downloads" -ForegroundColor Green
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Maps' -Name 'AllowUntriggeredNetworkTrafficOnSettingsPage' -Type DWord -Value 0
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Maps' -Name 'AutoDownloadAndUpdateMapData' -Type DWord -Value 0
 
-Write-Host ' -- Deleting Default0 User' -ForegroundColor Green
+Write-Host "`n-- Deleting Default0 User" -ForegroundColor Green
 net user defaultuser0 /delete
 
-Write-Host ' -- Disabling Windows Telemetry' -ForegroundColor Green
+Write-Host "`n-- Disabling Windows Telemetry" -ForegroundColor Green
 cmd /c 'schtasks /change /TN "\Microsoft\Windows\Customer Experience Improvement Program\Consolidator" /DISABLE > NUL 2>&1'
 cmd /c 'schtasks /change /TN "\Microsoft\Windows\Customer Experience Improvement Program\KernelCeipTask" /DISABLE > NUL 2>&1'
 cmd /c 'schtasks /change /TN "\Microsoft\Windows\Customer Experience Improvement Program\UsbCeip" /DISABLE > NUL 2>&1'
@@ -326,7 +326,7 @@ Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explore
 Set-RegistryValue -Path 'HKCU:\SOFTWARE\Microsoft\Siuf\Rules' -Name 'NumberOfSIUFInPeriod' -Type DWord -Value 0
 Remove-RegistryValue -Path 'HKCU:\SOFTWARE\Microsoft\Siuf\Rules' -Name 'PeriodInNanoSeconds'
 
-Write-Host ' -- Disabling Windows Search Telemetry' -ForegroundColor Green
+Write-Host "`n-- Disabling Windows Search Telemetry" -ForegroundColor Green
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search' -Name 'ConnectedSearchPrivacy' -Type DWord -Value 3
 Set-RegistryValue -Path 'HKLM:\Software\Policies\Microsoft\Windows\Explorer' -Name 'DisableSearchHistory' -Type DWord -Value 1
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search' -Name 'AllowSearchToUseLocation' -Type DWord -Value 0
@@ -365,14 +365,14 @@ Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Searc
 Set-RegistryValue -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search' -Name 'VoiceShortcut' -Type DWord -Value 0
 Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Search' -Name 'CortanaConsent' -Type DWord -Value 0
 
-Write-Host ' -- Disabling Application Experience telemetry' -ForegroundColor Green
+Write-Host "`n-- Disabling Application Experience telemetry" -ForegroundColor Green
 cmd /c 'schtasks /change /TN "\Microsoft\Windows\Application Experience\Microsoft Compatibility Appraiser" /DISABLE > NUL 2>&1'
 cmd /c 'schtasks /change /TN "\Microsoft\Windows\Application Experience\Microsoft Compatibility Appraiser Exp" /DISABLE > NUL 2>&1'
 cmd /c 'schtasks /change /TN "\Microsoft\Windows\Application Experience\StartupAppTask" /DISABLE > NUL 2>&1'
 cmd /c 'schtasks /change /TN "\Microsoft\Windows\Application Experience\PcaPatchDbTask" /DISABLE > NUL 2>&1'
 cmd /c 'schtasks /change /TN "\Microsoft\Windows\Application Experience\MareBackup" /DISABLE > NUL 2>&1'
 
-Write-Host ' -- Disabling Targeted Ads and Data Collection' -ForegroundColor Green
+Write-Host "`n-- Disabling Targeted Ads and Data Collection" -ForegroundColor Green
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent' -Name 'DisableSoftLanding' -Type DWord -Value 1
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent' -Name 'DisableSoftLanding' -Type DWord -Value 1
 Set-RegistryValue -Path 'HKLM:\Software\Policies\Microsoft\Windows\CloudContent' -Name 'DisableWindowsSpotlightFeatures' -Type DWord -Value 1
@@ -412,10 +412,10 @@ Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explore
 # Disable Windows Backup reminder notifications
 Set-RegistryValue -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Notifications\Settings\Windows.SystemToast.BackupReminder' -Name 'Enabled' -Type DWord -Value 0
 
-Write-Host ' -- Opting out of privacy consent' -ForegroundColor Green
+Write-Host "`n-- Opting out of privacy consent" -ForegroundColor Green
 Set-RegistryValue -Path 'HKCU:\SOFTWARE\Microsoft\Personalization\Settings' -Name 'AcceptedPrivacyPolicy' -Type DWord -Value 0
 
-Write-Host ' -- Disabling Manual Services' -ForegroundColor Green
+Write-Host "`n-- Disabling Manual Services" -ForegroundColor Green
 # Array of services to set to MANUAL (Start=Demand)
 $servicesManual = @(
     "ALG", "AppMgmt", "AppReadiness", "Appinfo", "AxInstSV",
@@ -485,20 +485,16 @@ function Set-ServiceConfig {
 Set-ServiceConfig -List $servicesManual -Type "Manual"
 Set-ServiceConfig -List $servicesDisabled -Type "Disabled"
 
-Write-Host ' -- Disabling Mouse Delay Times' -ForegroundColor Green
-Set-RegistryValue -Path 'HKCU:\Control Panel\Desktop' -Name 'MenuShowDelay' -Type String -Value 0
-Set-RegistryValue -Path 'HKCU:\Control Panel\Mouse' -Name 'MouseHoverTime' -Type String -Value 0
-
-Write-Host ' -- Enabling Verbose Logon' -ForegroundColor Green
+Write-Host "`n-- Enabling Verbose Logon" -ForegroundColor Green
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System' -Name 'VerboseStatus' -Type DWord -Value 1
 
-Write-Host ' -- Restricting Update Delivery to LAN only' -ForegroundColor Green
+Write-Host "`n-- Restricting Update Delivery to LAN only" -ForegroundColor Green
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config' -Name 'DODownloadMode' -Type DWord -Value 1
 
-Write-Host ' -- Disabling Remote Assistance' -ForegroundColor Green
+Write-Host "`n-- Disabling Remote Assistance" -ForegroundColor Green
 Set-RegistryValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Remote Assistance' -Name 'fAllowToGetHelp' -Type DWord -Value 0
 
-Write-Host ' -- Task Manager Details' -ForegroundColor Green
+Write-Host "`n-- Task Manager Details" -ForegroundColor Green
 If ((get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name CurrentBuild).CurrentBuild -lt 22557) {
     $taskmgr = Start-Process -WindowStyle Hidden -FilePath taskmgr.exe -PassThru
     Do {
@@ -509,23 +505,23 @@ If ((get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
     $preferences.Preferences[28] = 0
     Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\TaskManager' -Name 'Preferences' -Type Binary -Value $preferences.Preferences
 }
-Write-Host ' -- Expanding file copy details by default' -ForegroundColor Green
+Write-Host "`n-- Expanding file copy details by default" -ForegroundColor Green
 Set-RegistryValue -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\OperationStatusManager' -Name 'EnthusiastMode' -Type DWord -Value 1
 
-Write-Host ' -- Disabling "My People" on Taskbar' -ForegroundColor Green
+Write-Host "`n-- Disabling "My People" on Taskbar" -ForegroundColor Green
 Set-RegistryValue -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People' -Name 'PeopleBand' -Type DWord -Value 0
 
-Write-Host ' -- Enable Search Icon on Taskbar' -ForegroundColor Green
+Write-Host "`n-- Enable Search Icon on Taskbar" -ForegroundColor Green
 Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Search' -Name 'SearchboxTaskbarMode' -Type DWord -Value 1
 
-#Write-Host ' -- Setting Explorer to open "This PC"' -ForegroundColor Green
+#Write-Host "`n-- Setting Explorer to open "This PC"" -ForegroundColor Green
 #Set-RegistryValue -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name 'LaunchTo' -Type DWord -Value 1
 
-Write-Host ' -- Hide 3D Objects Folder' -ForegroundColor Green
+Write-Host "`n-- Hide 3D Objects Folder" -ForegroundColor Green
 Remove-RegistryKey -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}'
 Remove-RegistryKey -Path 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}'
 
-Write-Host ' -- Performance Tweaks and More Telemetry' -ForegroundColor Green
+Write-Host "`n-- Performance Tweaks and More Telemetry" -ForegroundColor Green
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching' -Name 'SearchOrderConfig' -Type DWord -Value 0
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile' -Name 'SystemResponsiveness' -Type DWord -Value 10
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile' -Name 'NetworkThrottlingIndex' -Type DWord -Value 10
@@ -539,80 +535,80 @@ Set-RegistryValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\
 Set-RegistryValue -Path 'HKCU:\Control Panel\Mouse' -Name 'MouseHoverTime' -Type DWord -Value 10
 
 # Network Tweaks
-Write-Host ' -- Optimizing Network File Sharing buffer' -ForegroundColor Green
+Write-Host "`n-- Optimizing Network File Sharing buffer" -ForegroundColor Green
 Set-RegistryValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters' -Name 'IRPStackSize' -Type DWord -Value 20
 
-Write-Host ' -- Group svchost.exe processes' -ForegroundColor Green
+Write-Host "`n-- Group svchost.exe processes" -ForegroundColor Green
 $ram = (Get-CimInstance -ClassName Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum).Sum / 1kb
 Set-RegistryValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Control' -Name 'SvcHostSplitThresholdInKB' -Type DWord -Value $ram -Force
 
-Write-Host ' -- Remove "News and Interest" from taskbar' -ForegroundColor Green
+Write-Host "`n-- Remove "News and Interest" from taskbar" -ForegroundColor Green
 Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Feeds' -Name 'ShellFeedsTaskbarViewMode' -Type DWord -Value 2
 
-Write-Host ' -- remove "Meet Now" button from taskbar' -ForegroundColor Green
+Write-Host "`n-- remove "Meet Now" button from taskbar" -ForegroundColor Green
 Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer' -Name 'HideSCAMeetNow' -Type DWord -Value 1
 
-Write-Host ' -- Blocking DiagTrack logging' -ForegroundColor Green
+Write-Host "`n-- Blocking DiagTrack logging" -ForegroundColor Green
 $autoLoggerDir = "$env:PROGRAMDATA\Microsoft\Diagnosis\ETLLogs\AutoLogger"
 If (Test-Path "$autoLoggerDir\AutoLogger-Diagtrack-Listener.etl") {
     Remove-Item "$autoLoggerDir\AutoLogger-Diagtrack-Listener.etl"
 }
 icacls $autoLoggerDir /deny SYSTEM:`(OI`)`(CI`)F | Out-Null
 
-Write-Host ' -- Disabling Wi-Fi Sense' -ForegroundColor Green
+Write-Host "`n-- Disabling Wi-Fi Sense" -ForegroundColor Green
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Microsoft\PolicyManager\default\WiFi\AllowWiFiHotSpotReporting' -Name 'Value' -Type DWord -Value 0
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Microsoft\PolicyManager\default\WiFi\AllowAutoConnectToWiFiSenseHotspots' -Name 'Value' -Type DWord -Value 0
 
-Write-Host ' -- Disabling Activity History' -ForegroundColor Green
+Write-Host "`n-- Disabling Activity History" -ForegroundColor Green
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\System' -Name 'EnableActivityFeed' -Type DWord -Value 0
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\System' -Name 'PublishUserActivities' -Type DWord -Value 0
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\System' -Name 'UploadUserActivities' -Type DWord -Value 0
 
-Write-Host ' -- Disabling Location Tracking' -ForegroundColor Green
+Write-Host "`n-- Disabling Location Tracking" -ForegroundColor Green
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location' -Name 'Value' -Type String -Value "Deny"
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Sensor\Overrides\{BFA794E4-F964-4FDB-90F6-51056BFE4B44}' -Name 'SensorPermissionState' -Type DWord -Value 0
 Set-RegistryValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\lfsvc\Service\Configuration' -Name 'Status' -Type DWord -Value 0
 
 Set-RegistryValue -Path 'HKLM:\SYSTEM\Maps' -Name 'AutoUpdateEnabled' -Type DWord -Value 0
 
-Write-Host ' -- Disabling Storage Sense' -ForegroundColor Green
+Write-Host "`n-- Disabling Storage Sense" -ForegroundColor Green
 Remove-RegistryKey -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\StorageSense\Parameters\StoragePolicy'
 
-Write-Host ' -- Enabling Power Throttling' -ForegroundColor Green
+Write-Host "`n-- Enabling Power Throttling" -ForegroundColor Green
 Set-RegistryValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerThrottling' -Name 'PowerThrottlingOff' -Type DWord -Value 00000000
 Set-RegistryValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Power' -Name 'HiberbootEnabled' -Type DWord -Value 0000001
 
-Write-Host ' -- Enabling NumLock after startup' -ForegroundColor Green
+Write-Host "`n-- Enabling NumLock after startup" -ForegroundColor Green
 If (!(Test-Path "HKU:")) {
     New-PSDrive -Name HKU -PSProvider Registry -Root HKEY_USERS | Out-Null
 }
 Set-RegistryValue -Path 'HKU:\.DEFAULT\Control Panel\Keyboard' -Name 'InitialKeyboardIndicators' -Type String -Value 2147483650
 Set-RegistryValue -Path 'HKCU:\Control Panel\Keyboard' -Name 'InitialKeyboardIndicators' -Type String -Value 2147483650
 
-Write-Host ' -- Setting BIOS time to UTC' -ForegroundColor Green
+Write-Host "`n-- Setting BIOS time to UTC" -ForegroundColor Green
 Set-RegistryValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\TimeZoneInformation' -Name 'RealTimeIsUniversal' -Type DWord -Value 1
 
-Write-Host ' -- Enabling Clipboard History' -ForegroundColor Green
+Write-Host "`n-- Enabling Clipboard History" -ForegroundColor Green
 Set-RegistryValue -Path 'HKCU:\SOFTWARE\Microsoft\Clipboard' -Name 'EnableClipboardHistory' -Type DWord -Value 1
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\System' -Name 'AllowClipboardHistory' -Type DWord -Value 1
 
 # Prevent installation of Teams
-Write-Host ' -- Preventing installation of Teams' -ForegroundColor Green
+Write-Host "`n-- Preventing installation of Teams" -ForegroundColor Green
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Teams' -Name 'DisableInstallation' -Type DWord -Value 1
 
-Write-Host ' -- Try the new Outlook' -ForegroundColor Green
+Write-Host "`n-- Try the new Outlook" -ForegroundColor Green
 Set-RegistryValue -Path 'HKCU:\SOFTWARE\Microsoft\Office\16.0\Outlook\Preferences' -Name 'UseNewOutlook' -Type DWord -Value 0
 Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Office\16.0\Outlook\Options\General' -Name 'HideNewOutlookToggle' -Type DWord -Value 1
 Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Office\16.0\Outlook\Options\General' -Name 'DoNewOutlookAutoMigration' -Type DWord -Value 0
 Remove-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Office\16.0\Outlook\Preferences' -Name 'NewOutlookMigrationUserSetting'
 
 # Disable Chat icon
-Write-Host ' -- Disabling Chat icon' -ForegroundColor Green
+Write-Host "`n-- Disabling Chat icon" -ForegroundColor Green
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Chat' -Name 'ChatIcon' -Type DWord -Value 3
 Set-RegistryValue -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name 'TaskbarMn' -Type DWord -Value 0
 
 # Prevent installation of DevHome and Outlook
-Write-Host ' -- Preventing installation of DevHome and Outlook' -ForegroundColor Green
+Write-Host "`n-- Preventing installation of DevHome and Outlook" -ForegroundColor Green
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Mail' -Name 'PreventRun' -Type DWord -Value 1
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Orchestrator\UScheduler_Oobe\OutlookUpdate' -Name 'workCompleted' -Type DWord -Value 1
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Orchestrator\UScheduler\OutlookUpdate' -Name 'workCompleted' -Type DWord -Value 1
@@ -621,20 +617,20 @@ Remove-RegistryKey -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Window
 Remove-RegistryKey -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Orchestrator\UScheduler_Oobe\DevHomeUpdate'
 
 # Prevent installation of Teams
-Write-Host ' -- Preventing installation of Teams' -ForegroundColor Green
+Write-Host "`n-- Preventing installation of Teams" -ForegroundColor Green
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Teams' -Name 'DisableInstallation' -Type DWord -Value 1
 
 # Prevent installation of New Outlook
-Write-Host ' -- Preventing installation of New Outlook' -ForegroundColor Green
+Write-Host "`n-- Preventing installation of New Outlook" -ForegroundColor Green
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Mail' -Name 'PreventRun' -Type DWord -Value 1
 
-Write-Host ' -- Disable Modern Standby Networking' -ForegroundColor Green
+Write-Host "`n-- Disable Modern Standby Networking" -ForegroundColor Green
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Power\PowerSettings\f15576e8-98b7-4186-b944-eafa664402d9' -Name 'ACSettingIndex' -Type DWord -Value 0
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Power\PowerSettings\f15576e8-98b7-4186-b944-eafa664402d9' -Name 'DCSettingIndex' -Type DWord -Value 0
 
-Write-Host ' -- Disable Click to Do' -ForegroundColor Green
+Write-Host "`n-- Disable Click to Do" -ForegroundColor Green
 Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Windows\WindowsAI' -Name 'DisableClickToDo' -Type DWord -Value 1
 Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI' -Name 'DisableClickToDo' -Type DWord -Value 1
 
-Write-Host ' -- Disable Password expiration' -ForegroundColor Green
+Write-Host "`n-- Disable Password expiration" -ForegroundColor Green
 net.exe accounts /maxpwage:UNLIMITED

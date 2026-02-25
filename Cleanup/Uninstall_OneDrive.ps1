@@ -5,19 +5,14 @@ Write-Host "Kill OneDrive process"
 taskkill.exe /F /IM "OneDrive.exe" 2>$null
 taskkill.exe /F /IM "explorer.exe" 2>$null
 
-Write-Host "Copy all OneDrive to Root UserProfile"
-# Fixed quoting for Robocopy
-$source = "$env:USERPROFILE\OneDrive"
-$dest = "$env:USERPROFILE\"
-if (Test-Path $source) {
-    Start-Process -FilePath "robocopy.exe" -ArgumentList "`"$source`" `"$dest`" /e /xj" -NoNewWindow -Wait
-}
-
 Write-Host "Remove OneDrive"
 $regPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\OneDriveSetup.exe"
 $OneDriveUninstallString = Get-ItemPropertyValue "$regPath" -Name "UninstallString"
 $OneDriveExe, $OneDriveArgs = $OneDriveUninstallString.Split(" ")
 Start-Process -FilePath $OneDriveExe -ArgumentList "$OneDriveArgs /silent" -NoNewWindow -Wait
+
+Write-Host "Copy all OneDrive to Root UserProfile"
+robocopy "$env:USERPROFILE\OneDrive" "$env:USERPROFILE" /mov /e /xj /ndl /nfl /njh /njs /nc /ns /np | Out-Null
 
 Write-Host "Removing OneDrive leftovers"
 Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "$env:localappdata\Microsoft\OneDrive"

@@ -9,6 +9,10 @@
     The log file is named using the target script's name, the current date, and time,
     ensuring that no logs are overwritten.
 
+    Log Location Priority:
+    1. _USBDATA\LOGs\ComputerName (if _USBDATA folder found on any drive)
+    2. LocalAppData\ScriptLogs\HardwareID (fallback)
+
     The user sees all output in the console as the script runs, and a complete transcript
     is saved for later review.
 
@@ -38,6 +42,64 @@
     # Run a script and save the log to a custom location
     .\Invoke-LoggedScript.ps1 -ScriptPath ".\MyTestScript.ps1" -LogDirectory "C:\Temp\Logs"
 #>
+
+function Get-HardwareID {
+    <#
+    .SYNOPSIS
+        Generates a persistent hardware ID based on system components.
+    #>
+    [CmdletBinding()]
+    param()
+    
+    try {
+        $hardwareComponents = @()
+        
+        # CPU ID
+        $cpu = Get-CimInstance -ClassName Win32_Processor -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($cpu.ProcessorId) { $hardwareComponents += $cpu.ProcessorId }
+        
+        # Motherboard Serial
+        $board = Get-CimInstance -ClassName Win32_BaseBoard -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($board.SerialNumber) { $hardwareComponents += $board.SerialNumber }
+        
+        # BIOS Serial
+        $bios = Get-CimInstance -ClassName Win32_BIOS -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($bios.SerialNumber) { $hardwareComponents += $bios.SerialNumber }
+        
+        # UUID from Computer System Product
+        $uuid = Get-CimInstance -ClassName Win32_ComputerSystemProduct -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($uuid.UUID -and $uuid.UUID -ne "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF") { 
+            $hardwareComponents += $uuid.UUID 
+        }
+        
+        # First Physical Disk Serial
+        $disk = Get-CimInstance -ClassName Win32_DiskDrive -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($disk.SerialNumber) { $hardwareComponents += $disk.SerialNumber.Trim() }
+        
+        # Combine all hardware info
+        $combinedInfo = ($hardwareComponents | Where-Object { $_ }) -join "|"
+        
+        if ([string]::IsNullOrEmpty($combinedInfo)) {
+            throw "No hardware information could be gathered"
+        }
+        
+        # Create SHA256 hash
+        $sha256 = [System.Security.Cryptography.SHA256]::Create()
+        $hashBytes = $sha256.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($combinedInfo))
+        $hashString = [System.BitConverter]::ToString($hashBytes).Replace("-", "")
+        
+        # Format as XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX (first 32 chars)
+        $formatted = ($hashString.Substring(0, 32) -replace '(.{4})', '$1-').TrimEnd('-')
+        
+        return $formatted
+    }
+    catch {
+        Write-Warning "Failed to generate hardware ID: $_"
+        # Return computer name as fallback
+        return $env:COMPUTERNAME
+    }
+}
+
 function Invoke-LoggedScript {
     [CmdletBinding(SupportsShouldProcess=$true)]
     param(
@@ -61,8 +123,10 @@ function Invoke-LoggedScript {
     try {
         # --- Custom log folder logic: Search for _USBDATA root folder on all drives ---
         $logRoot = $null
+        $hwid = $null
         $computerName = $env:COMPUTERNAME
         $drives = Get-PSDrive -PSProvider FileSystem | Where-Object { $null -ne $_.Free }
+        
         foreach ($drive in $drives) {
             $usbdataPath = Join-Path $drive.Root "_USBDATA"
             if (Test-Path $usbdataPath -PathType Container) {
@@ -72,43 +136,46 @@ function Invoke-LoggedScript {
             }
         }
 
-        if ($logRoot) {
-            # Ensure the log directory exists
-            if (-not (Test-Path -Path $LogDirectory -PathType Container)) {
-                Write-Verbose "Log directory not found. Creating it at: $LogDirectory"
-                New-Item -Path $LogDirectory -ItemType Directory -Force | Out-Null
-            }
+        # --- If _USBDATA not found, use LocalAppData folder with Hardware ID ---
+        if (-not $logRoot) {
+            Write-Verbose "_USBDATA folder not found. Using LocalAppData folder with Hardware ID."
+            $hwid = Get-HardwareID
+            $localAppData = [System.Environment]::GetFolderPath('LocalApplicationData')
+            $LogDirectory = Join-Path $localAppData "$hwid"
+            Write-Host "Logging to: $LogDirectory" -ForegroundColor Yellow
+        }
 
-            # Get the base name of the script (e.g., "MyScript" from "MyScript.ps1")
-            $scriptBaseName = (Get-Item -Path $ScriptPath).BaseName
-            $timestamp = Get-Date -Format 'yyyy.MM.dd_HH-mm-ss'
-            $logFileName = "$($scriptBaseName)_$($timestamp)_LOG.txt"
-            $logFullPath = Join-Path -Path $LogDirectory -ChildPath $logFileName
+        # Ensure the log directory exists
+        if (-not (Test-Path -Path $LogDirectory -PathType Container)) {
+            Write-Verbose "Log directory not found. Creating it at: $LogDirectory"
+            New-Item -Path $LogDirectory -ItemType Directory -Force | Out-Null
+        }
 
-            Start-Transcript -Path $logFullPath -Force
-            Write-Host "--------------------------------------------------------"
-            Write-Host "Starting script:" -ForegroundColor Cyan " $ScriptPath"
-            Write-Host "--------------------------------------------------------"
+        # Get the base name of the script (e.g., "MyScript" from "MyScript.ps1")
+        $scriptBaseName = (Get-Item -Path $ScriptPath).BaseName
+        $timestamp = Get-Date -Format 'yyyy.MM.dd_HH-mm-ss'
+        $logFileName = "$($scriptBaseName)_$($timestamp)_LOG.txt"
+        $logFullPath = Join-Path -Path $LogDirectory -ChildPath $logFileName
 
-            try {
-                # Check if the script is a batch file
-                $scriptExtension = (Get-Item -Path $ScriptPath).Extension
-                if ($scriptExtension -in @('.bat', '.cmd')) {
-                    & cmd.exe /c "call `"$ScriptPath`" $ArgumentList 2>&1" | ForEach-Object {
-                        Write-Host $_
-                    }
-                } else {
-                    # For PowerShell scripts, call directly
-                    & $ScriptPath @ArgumentList
+        Start-Transcript -Path $logFullPath -Force
+
+        try {
+            # Check if the script is a batch file
+            $scriptExtension = (Get-Item -Path $ScriptPath).Extension
+            if ($scriptExtension -in @('.bat', '.cmd')) {
+                & cmd.exe /c "call `"$ScriptPath`" $ArgumentList 2>&1" | ForEach-Object {
+                    Write-Host $_
                 }
+            } else {
+                # For PowerShell scripts, call directly
+                & $ScriptPath @ArgumentList
             }
-            finally {
-                Stop-Transcript
-            }
-        } else {
-            Write-Host "No _USBDATA folder found on any drive root. Logging is disabled for this session." -ForegroundColor Yellow
-            Write-Host "Running script without logging..."
-            & $ScriptPath @ArgumentList
+        }
+        finally {
+            Stop-Transcript
+            Write-Host "--------------------------------------------------------"
+            Write-Host "Log saved to: $logFullPath" -ForegroundColor Green
+            Write-Host "--------------------------------------------------------"
         }
     }
     catch {

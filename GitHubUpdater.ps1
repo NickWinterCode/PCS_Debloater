@@ -255,4 +255,3 @@ Invoke-GitHubAutoUpdate `
     -ManifestPath 'update/manifest.json' `
     -ProjectRoot $PSScriptRoot `
     -EntryScriptRelativePath 'PCS_Debloater.ps1'
-
